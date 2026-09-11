@@ -1,0 +1,96 @@
+/* Design tokens — ported from the OPFOR design system (tokens.css). Only the brand accent
+   differs: OPFOR red → amber/honey. Theme via [data-theme] on <html>; components read
+   var(--token), never raw hex. */
+
+:root {
+  /* Type */
+  --font-ui: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-display-app), var(--font-geist-sans), sans-serif;
+  --font-mono: var(--font-mono-app), ui-monospace, monospace;
+
+  /* Spacing scale (4px base) */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-12: 48px;
+
+  /* Radius */
+  --radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px; --radius-xl: 16px; --radius-pill: 999px;
+
+  /* Brand + semantic (theme-independent hues) */
+  --accent: #E0A526;        /* primary accent — amber / honey */
+  --accent-hover: #c48f16;
+  --accent-soft: rgba(224,165,38,.16);
+  --ok: #10B981;
+  --warn: #e2b53e;
+  --crit: #f2535a;
+  --info: #5b8def;
+
+  /* Chart palette */
+  --chart-cat-1:#E0A526; --chart-cat-2:#5aa98e; --chart-cat-3:#6e8fb8;
+  --chart-cat-4:#9a85bf; --chart-cat-5:#5f9bb0; --chart-cat-6:#c77f6b;
+
+  /* Motion */
+  --ease-spring:   cubic-bezier(.34,1.56,.64,1);
+  --ease-standard: cubic-bezier(.4,0,.2,1);
+  --dur-1: .15s; --dur-2: .2s; --dur-3: .3s;
+}
+
+/* DARK (default) */
+:root, :root[data-theme="dark"] {
+  --bg: #0a0c11;
+  --surface: #121620;
+  --surface-2: #181d28;
+  --elevated: #1f2533;
+  --border: rgba(255,255,255,.07);
+  --border-2: rgba(255,255,255,.12);
+  --text: #f1f2f4;
+  --text-2: #a6abb3;
+  --text-3: #6b7079;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-lg: 0 24px 60px rgba(0,0,0,.55);
+  color-scheme: dark;
+}
+
+/* LIGHT */
+:root[data-theme="light"] {
+  --bg: #f6f8fb;
+  --surface: #ffffff;
+  --surface-2: #f1f3f7;
+  --elevated: #ffffff;
+  --border: rgba(15,23,34,.09);
+  --border-2: rgba(15,23,34,.16);
+  --text: #0f1722;
+  --text-2: #475063;
+  --text-3: #6b7484;
+  --ok: #0a8a5f;
+  --warn: #b8841f;
+  --crit: #d92b30;
+  --info: #3f6bb5;
+  --accent: #b8841f;
+  --accent-hover: #9c6e12;
+  --accent-soft: rgba(184,132,31,.14);
+  --shadow-sm: 0 1px 2px rgba(15,23,34,.08);
+  --shadow-lg: 0 24px 60px rgba(15,23,34,.16);
+  color-scheme: light;
+}
+
+html, body { margin: 0; background: var(--bg); color: var(--text); }
+body { font-family: var(--font-ui); -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.5; }
+* { box-sizing: border-box; }
+
+/* Motion primitives */
+button { transition: transform var(--dur-2) var(--ease-spring); }
+button:active { transform: scale(.96); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+  button { transition: none; }
+  button:active { transform: none; }
+}
+
+.t-display { font-family: var(--font-display); font-weight: 600; letter-spacing: -.02em; }
+.t-mono { font-family: var(--font-mono); }
