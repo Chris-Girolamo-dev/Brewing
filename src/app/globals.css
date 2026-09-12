@@ -213,6 +213,19 @@ body {
   }
 }
 
+/* iOS Safari gives date/time inputs an intrinsic width that overflows grid cells. */
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"] {
+  min-width: 0;
+  max-width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+}
+input::-webkit-date-and-time-value { text-align: left; }
+input[type="number"] { min-width: 0; }
+
 /* Utilities */
 .scrollbar-none { scrollbar-width: none; }
 .scrollbar-none::-webkit-scrollbar { display: none; }

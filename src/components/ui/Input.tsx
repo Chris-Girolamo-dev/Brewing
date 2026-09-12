@@ -60,7 +60,9 @@ export function Field({
   )
 }
 
-/** Input with a trailing unit selector or static unit label, OPFOR "input + adornment" pattern. */
+/** Input with a trailing unit selector or static unit label, OPFOR "input + adornment" pattern.
+ *  Keeps the raw typed text locally so intermediate states like "1." or "1.0" survive a
+ *  parent that stores the parsed number (otherwise "1.042" can never be typed). */
 export function UnitInput({
   value,
   onChange,
@@ -84,20 +86,32 @@ export function UnitInput({
   className?: string
   autoFocus?: boolean
 }) {
+  const [text, setText] = React.useState(value)
+  React.useEffect(() => {
+    // Sync from the parent only when it represents a different number than what is typed.
+    const a = text.trim() === '' ? null : Number(text)
+    const b = value.trim() === '' ? null : Number(value)
+    const same = (a == null && b == null) || (a != null && b != null && Math.abs(a - b) < 1e-12)
+    if (!same) setText(value)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value])
   return (
-    <div className={cn('flex', className)}>
+    <div className={cn('flex min-w-0', className)}>
       <input
         type="number"
         inputMode={inputMode}
         step={step}
-        value={value}
+        value={text}
         placeholder={placeholder}
         autoFocus={autoFocus}
-        onChange={(e) => onChange(e.target.value)}
-        className={cn(fieldBase, 'h-[38px] rounded-r-none px-[13px] tabular')}
+        onChange={(e) => {
+          setText(e.target.value)
+          onChange(e.target.value)
+        }}
+        className={cn(fieldBase, 'h-[38px] min-w-0 rounded-r-none px-[13px] tabular')}
       />
       {units && onUnitChange ? (
-        <div className="relative">
+        <div className="relative shrink-0">
           <select
             value={unit}
             onChange={(e) => onUnitChange(e.target.value)}
@@ -112,7 +126,7 @@ export function UnitInput({
           <ChevronDown size={13} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-text-3" />
         </div>
       ) : (
-        <div className="flex h-[38px] items-center rounded-r-lg border border-l-0 border-border-2 bg-surface-2 px-3 text-xs font-semibold text-text-2">
+        <div className="flex h-[38px] shrink-0 items-center rounded-r-lg border border-l-0 border-border-2 bg-surface-2 px-3 text-xs font-semibold text-text-2">
           {unit}
         </div>
       )}

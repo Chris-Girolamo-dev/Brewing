@@ -118,7 +118,7 @@ export function EditBatchDialog({ view, open, onClose }: { view: BatchView; open
             </Select>
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field label="Batch date">
             <Input type="date" value={f.batch_date} onChange={(e) => set('batch_date', e.target.value)} />
           </Field>

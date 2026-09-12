@@ -50,7 +50,7 @@ export default function SettingsPage() {
               <Input type="number" inputMode="numeric" min={1} value={prefs.stable_gravity_days} onChange={(e) => setPrefs({ stable_gravity_days: Math.max(1, Number(e.target.value) || 1) })} />
             </Field>
             <Field label="Tolerance (SG)" hint="…within this difference flag “gravity appears stable”.">
-              <Input type="number" inputMode="decimal" step={0.001} min={0} value={prefs.stable_gravity_tolerance} onChange={(e) => setPrefs({ stable_gravity_tolerance: Math.max(0, Number(e.target.value) || 0) })} />
+              <ToleranceInput value={prefs.stable_gravity_tolerance} onChange={(v) => setPrefs({ stable_gravity_tolerance: v })} />
             </Field>
             <div className="col-span-2 text-xs text-text-3">Fermentation is never marked complete automatically. You confirm FG from the batch page.</div>
           </CardBody>
@@ -124,6 +124,28 @@ export default function SettingsPage() {
         <p className="text-sm text-text-2">This wipes browser-local data and reloads the three seed batches. Export a JSON backup first if you want to keep anything.</p>
       </Dialog>
     </>
+  )
+}
+
+function ToleranceInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const [text, setText] = React.useState(String(value))
+  React.useEffect(() => {
+    if (Number(text) !== value) setText(String(value))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value])
+  return (
+    <Input
+      type="number"
+      inputMode="decimal"
+      step={0.001}
+      min={0}
+      value={text}
+      onChange={(e) => {
+        setText(e.target.value)
+        const n = Number(e.target.value)
+        if (e.target.value !== '' && Number.isFinite(n)) onChange(Math.max(0, n))
+      }}
+    />
   )
 }
 
