@@ -23,6 +23,7 @@ import {
   VOLUME_UNITS,
   type Batch,
   type BatchIngredient,
+  type Measurement,
   type Packaging,
   type Recipe,
   type RecipeIngredient,
@@ -1282,6 +1283,76 @@ export function DuplicateDialog({ view, open, onClose, mode }: { view: BatchView
       <div className="mt-3 text-xs text-text-3">
         {view.inheritedIngredients.length + view.ingredients.length} ingredients · {view.inheritedYeasts.length + view.yeasts.length} yeast
         {view.parent ? ` (includes inherited from ${view.parent.batch_code})` : ''}
+      </div>
+    </Dialog>
+  )
+}
+
+// ---------------------------------------------------------------- Measurement (edit / delete)
+
+export function MeasurementDialog({ measurement, open, onClose }: { measurement: Measurement | null; open: boolean; onClose: () => void }) {
+  const { update, remove, touchBatch } = useStore()
+  const toast = useToast()
+  const [value, setValue] = React.useState('')
+  const [when, setWhen] = React.useState(toLocalInput(null))
+  const [notes, setNotes] = React.useState('')
+  React.useEffect(() => {
+    if (!open || !measurement) return
+    setValue(String(measurement.value))
+    setWhen(toLocalInput(measurement.measured_at))
+    setNotes(measurement.notes ?? '')
+  }, [open, measurement])
+  if (!measurement) return null
+  const label = measurement.type === 'sg' ? 'Specific gravity' : measurement.type === 'temp' ? 'Temperature' : measurement.type === 'ph' ? 'pH' : measurement.type === 'brix' ? 'Brix' : 'Volume'
+  const unit = measurement.type === 'sg' ? 'SG' : measurement.type === 'temp' ? `°${measurement.unit}` : measurement.unit
+  const n = num(value)
+
+  async function save() {
+    if (!measurement || n == null) return
+    await update('batch_measurements', measurement.id, { value: n, measured_at: fromLocalInput(when), notes: str(notes) })
+    await touchBatch(measurement.batch_id)
+    toast({ tone: 'ok', title: 'Reading updated' })
+    onClose()
+  }
+  async function del() {
+    if (!measurement) return
+    await remove('batch_measurements', measurement.id)
+    await touchBatch(measurement.batch_id)
+    toast({ tone: 'ok', title: 'Reading deleted' })
+    onClose()
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title={`Edit ${label.toLowerCase()} reading`}
+      footer={
+        <>
+          <Button variant="danger" className="mr-auto" onClick={del}>
+            Delete
+          </Button>
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={save} disabled={n == null}>
+            Save
+          </Button>
+        </>
+      }
+    >
+      <div className="grid gap-3">
+        <div className="grid grid-cols-2 gap-3">
+          <Field label={label}>
+            <UnitInput autoFocus value={value} onChange={setValue} unit={unit} step={measurement.type === 'sg' ? 0.001 : measurement.type === 'ph' ? 0.01 : 'any'} />
+          </Field>
+          <Field label="When">
+            <Input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} />
+          </Field>
+        </div>
+        <Field label="Notes">
+          <Input value={notes} onChange={(e) => setNotes(e.target.value)} />
+        </Field>
       </div>
     </Dialog>
   )

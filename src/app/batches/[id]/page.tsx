@@ -40,6 +40,7 @@ import {
   DuplicateDialog,
   EditBatchDialog,
   IngredientDialog,
+  MeasurementDialog,
   PackagingDialog,
   ReminderDialog,
   StabilizationDialog,
@@ -47,7 +48,7 @@ import {
   YeastDialog,
 } from '@/components/batch/dialogs'
 import { NutrientPlan } from '@/components/batch/NutrientPlan'
-import { BATCH_STAGES, type BatchIngredient, type Tasting, type TempUnit, type Yeast } from '@/lib/types'
+import { BATCH_STAGES, type BatchIngredient, type Measurement, type Tasting, type TempUnit, type Yeast } from '@/lib/types'
 import { formatAmount, formatGravity, formatTemp, formatVolume, convertVolume } from '@/lib/calc/units'
 import { transferLoss, daysBetween } from '@/lib/calc/fermentation'
 import { bottleBreakdown } from '@/lib/calc/packaging'
@@ -67,6 +68,7 @@ export default function BatchDetailPage() {
   const [editIng, setEditIng] = React.useState<BatchIngredient | null>(null)
   const [editYeast, setEditYeast] = React.useState<Yeast | null>(null)
   const [editTasting, setEditTasting] = React.useState<Tasting | null>(null)
+  const [editMeasurement, setEditMeasurement] = React.useState<Measurement | null>(null)
   const [menu, setMenu] = React.useState(false)
 
   const batch = data.batches.find((b) => b.id === id)
@@ -458,7 +460,10 @@ export default function BatchDetailPage() {
             <FermentationChart view={view} />
             <Card>
               <CardHeader>
-                <CardTitle>All readings</CardTitle>
+                <div>
+                  <CardTitle>All readings</CardTitle>
+                  <div className="text-xs text-text-3">Tap a row to edit or delete.</div>
+                </div>
                 <div className="flex gap-2">
                   <Button size="sm" variant="ghost" onClick={() => exportMeasurementsCsv(view)}>
                     <Download /> CSV
@@ -488,7 +493,7 @@ export default function BatchDetailPage() {
                       {[...view.measurements]
                         .sort((a, b) => b.measured_at.localeCompare(a.measured_at))
                         .map((m) => (
-                          <TR key={m.id}>
+                          <TR key={m.id} className="cursor-pointer" onClick={() => { setEditMeasurement(m); setDlg('measurement') }}>
                             <TD>{fmtDateTime(m.measured_at)}</TD>
                             <TD className="font-mono">{daysBetween(batch.pitch_date ?? batch.batch_date, m.measured_at)}</TD>
                             <TD>
@@ -500,7 +505,7 @@ export default function BatchDetailPage() {
                             <TD>{m.stage ?? '—'}</TD>
                             <TD>{m.notes ?? ''}</TD>
                             <TD className="text-right">
-                              <button className="text-text-3 hover:text-crit" onClick={() => remove('batch_measurements', m.id)} aria-label="Delete">
+                              <button className="text-text-3 hover:text-crit" onClick={(e) => { e.stopPropagation(); remove('batch_measurements', m.id) }} aria-label="Delete">
                                 <Trash2 size={14} />
                               </button>
                             </TD>
@@ -777,6 +782,7 @@ export default function BatchDetailPage() {
       <ConfirmFgDialog view={view} open={dlg === 'fg'} onClose={close} />
       <PackagingDialog view={view} open={dlg === 'packaging'} onClose={close} />
       <TastingDialog view={view} existing={editTasting} open={dlg === 'tasting'} onClose={close} />
+      <MeasurementDialog measurement={editMeasurement} open={dlg === 'measurement'} onClose={close} />
       <StabilizationDialog view={view} open={dlg === 'stabilize'} onClose={close} />
       <BacksweetenDialog view={view} open={dlg === 'backsweeten'} onClose={close} />
       <ReminderDialog batchId={batch.id} open={dlg === 'reminder'} onClose={close} />
@@ -844,7 +850,7 @@ function Timeline({ view, limit }: { view: ReturnType<typeof buildBatchView>; li
                 <span>Day {day}</span>
                 <span>·</span>
                 <span>{fmtDateTime(e.occurred_at)}</span>
-                <button className="opacity-0 transition-opacity hover:text-crit group-hover:opacity-100" onClick={() => { remove('batch_events', e.id); measurements.forEach((m) => remove('batch_measurements', m.id)) }} aria-label="Delete event">
+                <button className="opacity-40 transition-opacity hover:text-crit hover:opacity-100 group-hover:opacity-100" onClick={() => { remove('batch_events', e.id); measurements.forEach((m) => remove('batch_measurements', m.id)) }} aria-label="Delete event">
                   <Trash2 size={12} />
                 </button>
               </div>

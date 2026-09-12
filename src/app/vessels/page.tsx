@@ -27,7 +27,7 @@ export default function VesselsPage() {
       <PageHeader
         eyebrow="Vessels"
         title="Equipment"
-        subtitle={`${vessels.length} vessels · ${vessels.filter((v) => data.batches.some((b) => b.current_vessel_id === v.id && isActive(b))).length} in use`}
+        subtitle="Vessel types you own. Several batches can sit in the same type; pick it when racking or splitting."
         actions={
           <Button onClick={() => setEdit('new')}>
             <Plus /> Vessel
@@ -36,7 +36,7 @@ export default function VesselsPage() {
       />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {vessels.map((v) => {
-          const batch = data.batches.find((b) => b.current_vessel_id === v.id && isActive(b))
+          const inType = data.batches.filter((b) => b.current_vessel_id === v.id && isActive(b))
           return (
             <Card key={v.id} className="cursor-pointer p-4 hover:border-border-2" onClick={() => setEdit(v)}>
               <div className="flex items-start justify-between gap-3">
@@ -46,12 +46,18 @@ export default function VesselsPage() {
                     {[v.type, v.material].filter(Boolean).join(' · ')} · {formatVolume(v.capacity, v.capacity_unit, prefs.unit_system)}
                   </div>
                 </div>
-                <StatusPill tone={batch ? 'warn' : 'ok'}>{batch ? 'In use' : 'Available'}</StatusPill>
+                <StatusPill tone={inType.length ? 'accent' : 'neutral'}>{inType.length ? `${inType.length} batch${inType.length > 1 ? 'es' : ''}` : 'Empty'}</StatusPill>
               </div>
-              {batch && (
-                <Link href={`/batches/${batch.id}`} className="mt-3 block text-xs text-text-2 hover:text-fg" onClick={(e) => e.stopPropagation()}>
-                  {batch.name} · {batch.stage}
-                </Link>
+              {inType.length > 0 && (
+                <ul className="mt-3 space-y-0.5">
+                  {inType.map((batch) => (
+                    <li key={batch.id}>
+                      <Link href={`/batches/${batch.id}`} className="block text-xs text-text-2 hover:text-fg" onClick={(e) => e.stopPropagation()}>
+                        {batch.name} · {batch.stage}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               )}
               {v.notes && <p className="mt-2 text-xs text-text-3">{v.notes}</p>}
             </Card>
@@ -129,7 +135,7 @@ function VesselDialog({
     >
       <div className="grid gap-3">
         <Field label="Name">
-          <Input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="1-Gallon Glass Jar #1" />
+          <Input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="1-Gallon Glass Jar" />
         </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Type">

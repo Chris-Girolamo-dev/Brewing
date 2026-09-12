@@ -69,7 +69,6 @@ export function SplitDialog({ batchId, open, onClose }: { batchId: string | null
   const rawLeftover = before != null ? round(before - sum, 3) : null
   // Rounding noise from even splits (5 / 3 = 1.667) is not a real loss or overflow.
   const leftover = rawLeftover != null && Math.abs(rawLeftover) < 0.005 ? 0 : rawLeftover
-  const usedVessels = new Set(data.batches.filter((b) => b.current_vessel_id && b.id !== batch.id && b.stage !== 'Split').map((b) => b.current_vessel_id))
   const valid = rows.length >= 2 && rows.every((r) => num(r.volume) != null && num(r.volume)! > 0) && (leftover == null || leftover >= -1e-9)
 
   const patch = (i: number, p: Partial<LotRow>) => setRows((rs) => rs.map((r, j) => (j === i ? { ...r, ...p } : r)))
@@ -250,7 +249,7 @@ export function SplitDialog({ batchId, open, onClose }: { batchId: string | null
         <div className="rounded-xl border border-border bg-canvas">
           <div className="hidden grid-cols-[1fr_1.2fr_110px_1.4fr_auto] gap-2 border-b border-border px-3 py-2 font-mono text-[10.5px] uppercase tracking-wider text-text-3 sm:grid">
             <div>Label</div>
-            <div>Vessel</div>
+            <div>Vessel type</div>
             <div>Volume</div>
             <div>First addition (optional)</div>
             <div />
@@ -264,9 +263,8 @@ export function SplitDialog({ batchId, open, onClose }: { batchId: string | null
               <Select value={r.vessel_id} onChange={(e) => patch(i, { vessel_id: e.target.value })}>
                 <option value="">Vessel…</option>
                 {data.vessels.map((v) => (
-                  <option key={v.id} value={v.id} disabled={usedVessels.has(v.id) && v.id !== r.vessel_id}>
+                  <option key={v.id} value={v.id}>
                     {v.name}
-                    {usedVessels.has(v.id) ? ' (in use)' : ''}
                   </option>
                 ))}
               </Select>

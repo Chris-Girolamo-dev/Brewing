@@ -24,16 +24,13 @@ const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')
 const T = '2026-09-11T12:00:00.000Z' // seed "created_at"; the app treats this as history.
 const d = (iso: string) => `${iso}T17:00:00.000Z`
 
+// Vessels are TYPES, not individual containers: several batches may share one entry.
 const V = {
-  jar1: id(1),
-  jar2: id(2),
-  jar3: id(3),
+  jar: id(1),
   carboy5: id(4),
   carboy65: id(5),
   bucket65: id(6),
-  jug1: id(7),
-  jug2: id(8),
-  jug3: id(9),
+  jug: id(7),
 }
 const B = { mead: id(100), bcider: id(101), acider: id(102) }
 const P = { bomber: id(200), wine750: id(201), swing16: id(202) }
@@ -42,15 +39,11 @@ export function buildSeed(): Snapshot {
   const s = emptySnapshot()
 
   s.vessels = [
-    vessel(V.jar1, '1-Gallon Glass Jar #1', 'Jar', 1, 'gal', 'Glass'),
-    vessel(V.jar2, '1-Gallon Glass Jar #2', 'Jar', 1, 'gal', 'Glass'),
-    vessel(V.jar3, '1-Gallon Glass Jar #3', 'Jar', 1, 'gal', 'Glass'),
-    vessel(V.carboy5, '5-Gallon Carboy #1', 'Carboy', 5, 'gal', 'Glass'),
-    vessel(V.carboy65, '6.5-Gallon Carboy #1', 'Carboy', 6.5, 'gal', 'Glass'),
-    vessel(V.bucket65, '6.5-Gallon Bucket #1', 'Bucket', 6.5, 'gal', 'HDPE'),
-    vessel(V.jug1, '1.5-Gallon Jug #1', 'Jar', 1.5, 'gal', 'Glass'),
-    vessel(V.jug2, '1.5-Gallon Jug #2', 'Jar', 1.5, 'gal', 'Glass'),
-    vessel(V.jug3, '1.5-Gallon Jug #3', 'Jar', 1.5, 'gal', 'Glass'),
+    vessel(V.jar, '1-Gallon Glass Jar', 'Jar', 1, 'gal', 'Glass'),
+    vessel(V.jug, '1.5-Gallon Jug', 'Jar', 1.5, 'gal', 'Glass'),
+    vessel(V.carboy5, '5-Gallon Carboy', 'Carboy', 5, 'gal', 'Glass'),
+    vessel(V.carboy65, '6.5-Gallon Carboy', 'Carboy', 6.5, 'gal', 'Glass'),
+    vessel(V.bucket65, '6.5-Gallon Bucket', 'Bucket', 6.5, 'gal', 'HDPE'),
   ]
 
   s.package_profiles = [
@@ -75,7 +68,7 @@ export function buildSeed(): Snapshot {
       goal: 'Semi-dry',
       stage: 'Primary Fermentation',
       og: 1.12,
-      current_vessel_id: V.jar1,
+      current_vessel_id: V.jar,
       notes: 'PLACEHOLDER — values from spec examples. Replace with paper notes.',
     })
   )
@@ -98,7 +91,7 @@ export function buildSeed(): Snapshot {
     ['2026-09-08', 1.036, 69],
     ['2026-09-10', 1.022, 68],
   ]
-  addReadings(s, B.mead, meadReadings, 600, 'Primary Fermentation', V.jar1)
+  addReadings(s, B.mead, meadReadings, 600, 'Primary Fermentation', V.jar)
   s.batch_events.push(
     ev(id(700), B.mead, meadPitch, 'Batch Created', 'Planning'),
     ev(id(701), B.mead, meadPitch, 'Yeast Pitched', 'Primary Fermentation', 'Lalvin 71B, rehydrated in Go-Ferm'),
@@ -129,7 +122,7 @@ export function buildSeed(): Snapshot {
       fg: 0.997,
       fg_confirmed_at: d('2026-08-29'),
       fermentation_complete_at: d('2026-08-29'),
-      current_vessel_id: V.jar2,
+      current_vessel_id: V.jar,
       notes: 'PLACEHOLDER — values from spec comparison example (v1). Replace with paper notes.',
     })
   )
@@ -151,17 +144,17 @@ export function buildSeed(): Snapshot {
     ],
     610,
     'Primary Fermentation',
-    V.jar3
+    V.jar
   )
   s.batch_transfers.push(
-    xfer(id(900), B.bcider, d('2026-09-06'), V.jar3, V.jar2, 128, 125, 'oz', 'Auto-siphon', 'Remove from lees / fruit', 'Clear, minimal sediment')
+    xfer(id(900), B.bcider, d('2026-09-06'), V.jar, V.jar, 128, 125, 'oz', 'Auto-siphon', 'Remove from lees / fruit', 'Clear, minimal sediment')
   )
   s.batch_events.push(
     ev(id(710), B.bcider, bcPitch, 'Batch Created', 'Planning'),
     ev(id(711), B.bcider, bcPitch, 'Yeast Pitched', 'Primary Fermentation', 'Lalvin 71B'),
     ev(id(712), B.bcider, d('2026-08-24'), 'Punch Down', 'Primary Fermentation'),
     ev(id(713), B.bcider, d('2026-08-29'), 'Fermentation Complete', 'Primary Fermentation', 'FG 0.997 confirmed'),
-    ev(id(714), B.bcider, d('2026-09-06'), 'Racked', 'Secondary / Clearing', 'Jar #3 → Jar #2, 128 → 125 oz'),
+    ev(id(714), B.bcider, d('2026-09-06'), 'Racked', 'Secondary / Clearing', 'Racked to a clean 1-gal jar, 128 → 125 oz'),
     ev(id(715), B.bcider, d('2026-09-06'), 'Fining Added', 'Secondary / Clearing', 'Bentonite 1 tsp')
   )
   s.reminders.push(rem(id(810), B.bcider, 'Check clarity; rack off bentonite', d('2026-09-14')))
