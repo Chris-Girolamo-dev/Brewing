@@ -78,6 +78,7 @@ export const ACTIVITY_TYPES = [
   'Airlock Changed',
   'Racked',
   'Stabilized',
+  'Pasteurized',
   'Backsweetened',
   'Acid Adjustment',
   'Tannin Adjustment',

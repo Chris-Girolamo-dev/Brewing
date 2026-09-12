@@ -64,6 +64,10 @@ export function LogActivityDialog({
   const [addUnit, setAddUnit] = React.useState<string>('g')
   // Stage change
   const [newStage, setNewStage] = React.useState<string>('')
+  // Pasteurization
+  const [pastTemp, setPastTemp] = React.useState('')
+  const [pastMinutes, setPastMinutes] = React.useState('')
+  const [pastMethod, setPastMethod] = React.useState('Stovetop water bath')
 
   React.useEffect(() => {
     if (!open) return
@@ -83,6 +87,9 @@ export function LogActivityDialog({
     setAddName('')
     setAddAmount('')
     setNewStage('')
+    setPastTemp('')
+    setPastMinutes('')
+    setPastMethod('Stovetop water bath')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, batchId, preset])
 
@@ -116,7 +123,8 @@ export function LogActivityDialog({
     'Stabilized',
   ].includes(type)
   const showStage = type === 'Stage Changed'
-  const needsNotesOnly = !showGravity && !showTemp && !showPh && !showTransfer && !showAddition && !showStage
+  const showPasteurize = type === 'Pasteurized'
+  const needsNotesOnly = !showGravity && !showTemp && !showPh && !showTransfer && !showAddition && !showStage && !showPasteurize
 
   const canSave =
     !!batch &&
@@ -180,6 +188,13 @@ export function LogActivityDialog({
         parts.push(`${addName}${amt != null ? ` ${amt} ${addUnit}` : ''}`)
       }
       if (showStage && newStage) parts.push(`→ ${newStage}`)
+      if (showPasteurize) {
+        const pt = num(pastTemp)
+        const pm = num(pastMinutes)
+        if (pt != null) parts.push(`${pt}°${tempUnit}`)
+        if (pm != null) parts.push(`${pm} min hold`)
+        if (str(pastMethod)) parts.push(pastMethod.trim())
+      }
 
       const title = parts.length ? parts.join(' · ') : null
 
@@ -403,6 +418,24 @@ export function LogActivityDialog({
             </Field>
             <Field label="Amount">
               <UnitInput value={addAmount} onChange={setAddAmount} unit={addUnit} units={INGREDIENT_UNITS} onUnitChange={setAddUnit} placeholder="2.0" />
+            </Field>
+          </div>
+        )}
+
+        {showPasteurize && (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <Field label="Temperature" hint="Liquid or bottle core temp">
+              <UnitInput autoFocus value={pastTemp} onChange={setPastTemp} unit={`°${tempUnit}`} placeholder={tempUnit === 'F' ? '165' : '74'} />
+            </Field>
+            <Field label="Hold time">
+              <UnitInput value={pastMinutes} onChange={setPastMinutes} unit="min" inputMode="numeric" placeholder="10" />
+            </Field>
+            <Field label="Method" className="col-span-2 sm:col-span-1">
+              <Select value={pastMethod} onChange={(e) => setPastMethod(e.target.value)}>
+                {['Stovetop water bath', 'Sous vide', 'Bottle pasteurization', 'Bulk in vessel', 'Other'].map((m) => (
+                  <option key={m}>{m}</option>
+                ))}
+              </Select>
             </Field>
           </div>
         )}

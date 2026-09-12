@@ -913,6 +913,7 @@ function dotColor(type: string): string {
   if (type === 'Gravity Reading' || type === 'pH Reading' || type === 'Temperature Reading') return 'bg-accent'
   if (type === 'Racked' || type === 'Bottled' || type === 'Kegged') return 'bg-info'
   if (type === 'Fermentation Complete') return 'bg-ok'
+  if (type === 'Pasteurized' || type === 'Stabilized') return 'bg-warn'
   if (type === 'Problem / Deviation') return 'bg-crit'
   return 'bg-text-3'
 }
