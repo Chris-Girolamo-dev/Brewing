@@ -24,24 +24,33 @@ export function FermentationChart({ view, compact = false }: { view: BatchView; 
   const start = view.batch.pitch_date ?? view.batch.batch_date
   const data = React.useMemo(() => {
     const t0 = new Date(start).getTime()
-    const rows = new Map<number, { day: number; sg?: number; abv?: number | null; temp?: number; ph?: number }>()
+    const rows = new Map<number, { day: number; sg?: number; psg?: number; abv?: number | null; temp?: number; ph?: number }>()
     const dayOf = (iso: string) => Math.round((differenceInHours(new Date(iso), t0) / 24) * 10) / 10
-    for (const m of view.measurements) {
+    const all = [...view.inheritedMeasurements.map((m) => ({ m, inherited: true })), ...view.measurements.map((m) => ({ m, inherited: false }))]
+    for (const { m, inherited } of all) {
       const day = dayOf(m.measured_at)
       const row = rows.get(day) ?? { day }
       if (m.type === 'sg') {
-        row.sg = m.value
-        row.abv = estimatedAbv(view.og, m.value)
+        if (inherited) row.psg = m.value
+        else {
+          row.sg = m.value
+          row.abv = estimatedAbv(view.og, m.value)
+        }
       } else if (m.type === 'temp') row.temp = Math.round(convertTemp(m.value, m.unit as TempUnit, tempUnit))
       else if (m.type === 'ph') row.ph = m.value
       rows.set(day, row)
     }
-    return [...rows.values()].sort((a, b) => a.day - b.day)
-  }, [view.measurements, view.og, start, tempUnit])
+    // Join the inherited curve to the child's first own reading so the line is continuous.
+    const sorted = [...rows.values()].sort((a, b) => a.day - b.day)
+    const firstOwn = sorted.find((r) => r.sg != null)
+    if (firstOwn && firstOwn.psg == null) firstOwn.psg = firstOwn.sg
+    return sorted
+  }, [view.measurements, view.inheritedMeasurements, view.og, start, tempUnit])
 
   const hasTemp = data.some((d) => d.temp != null)
   const hasPh = data.some((d) => d.ph != null)
-  const sgVals = data.map((d) => d.sg).filter((v): v is number => v != null)
+  const sgVals = data.flatMap((d) => [d.sg, d.psg]).filter((v): v is number => v != null)
+  const hasInherited = data.some((d) => d.psg != null)
   const sgMin = sgVals.length ? Math.min(...sgVals) - 0.005 : 0.99
   const sgMax = sgVals.length ? Math.max(...sgVals) + 0.005 : 1.1
 
@@ -62,6 +71,7 @@ export function FermentationChart({ view, compact = false }: { view: BatchView; 
         <FigCaption>
           FIG. 01 / {series === 'sg' ? 'GRAVITY' : 'EST. ABV'} · vs DAYS
           {overlayKey ? ` · ${overlayKey === 'temp' ? `°${tempUnit}` : 'pH'}` : ''}
+          {hasInherited && series === 'sg' ? ' · DASHED = PARENT' : ''}
         </FigCaption>
         {!compact && (
           <div className="flex flex-wrap gap-2">
@@ -132,6 +142,7 @@ export function FermentationChart({ view, compact = false }: { view: BatchView; 
               labelFormatter={(v) => `Day ${v}`}
               formatter={(value, name) => {
                 if (name === 'sg') return [Number(value).toFixed(3), 'SG']
+                if (name === 'psg') return [Number(value).toFixed(3), `SG (${view.parent?.batch_code ?? 'parent'})`]
                 if (name === 'abv') return [`${value}%`, 'Est. ABV']
                 if (name === 'temp') return [`${value}°${tempUnit}`, 'Temp']
                 return [value, 'pH']
@@ -139,6 +150,19 @@ export function FermentationChart({ view, compact = false }: { view: BatchView; 
             />
             {view.batch.fg != null && series === 'sg' && (
               <ReferenceLine yAxisId="left" y={view.batch.fg} stroke="var(--ok)" strokeDasharray="4 4" label={{ value: 'FG', fill: 'var(--ok)', fontSize: 10, position: 'insideTopRight' }} />
+            )}
+            {hasInherited && series === 'sg' && (
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="psg"
+                stroke="var(--text-3)"
+                strokeWidth={1.5}
+                strokeDasharray="4 3"
+                dot={{ r: 2, fill: 'var(--text-3)', strokeWidth: 0 }}
+                connectNulls
+                isAnimationActive={false}
+              />
             )}
             <Line
               yAxisId="left"

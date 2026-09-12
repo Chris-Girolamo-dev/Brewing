@@ -7,7 +7,10 @@ insert into vessels (id, name, type, capacity, capacity_unit, material, notes, c
   ('00000000-0000-4000-8000-000000000003', '1-Gallon Glass Jar #3', 'Jar', 1, 'gal', 'Glass', null, '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000000004', '5-Gallon Carboy #1', 'Carboy', 5, 'gal', 'Glass', null, '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000000005', '6.5-Gallon Carboy #1', 'Carboy', 6.5, 'gal', 'Glass', null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000000006', '6.5-Gallon Bucket #1', 'Bucket', 6.5, 'gal', 'HDPE', null, '2026-09-11T12:00:00.000Z')
+  ('00000000-0000-4000-8000-000000000006', '6.5-Gallon Bucket #1', 'Bucket', 6.5, 'gal', 'HDPE', null, '2026-09-11T12:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000000007', '1.5-Gallon Jug #1', 'Jar', 1.5, 'gal', 'Glass', null, '2026-09-11T12:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000000008', '1.5-Gallon Jug #2', 'Jar', 1.5, 'gal', 'Glass', null, '2026-09-11T12:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000000009', '1.5-Gallon Jug #3', 'Jar', 1.5, 'gal', 'Glass', null, '2026-09-11T12:00:00.000Z')
 on conflict (id) do nothing;
 
 insert into package_profiles (id, name, package_type, container_size, size_unit, closure, created_at) values
@@ -16,10 +19,10 @@ insert into package_profiles (id, name, package_type, container_size, size_unit,
   ('00000000-0000-4000-8000-000000000202', '16 oz swing-top', 'Swing-top bottle', 16, 'oz', 'Swing top', '2026-09-11T12:00:00.000Z')
 on conflict (id) do nothing;
 
-insert into batches (style, recipe_id, pitch_date, target_volume, volume_unit, goal, stage, og, fg, fg_confirmed_at, fermentation_complete_at, current_vessel_id, notes, created_at, updated_at, id, batch_code, name, beverage_type, batch_date) values
-  ('Blueberry melomel', null, '2026-08-30T17:00:00.000Z', 1, 'gal', 'Semi-dry', 'Primary Fermentation', 1.12, null, null, null, '00000000-0000-4000-8000-000000000001', 'PLACEHOLDER — values from spec examples. Replace with paper notes.', '2026-09-11T12:00:00.000Z', '2026-09-11T12:00:00.000Z', '00000000-0000-4000-8000-000000000100', 'MEAD-2026-001', 'Blueberry Mead', 'Melomel', '2026-08-30'),
-  ('Fruit cider', null, '2026-08-20T17:00:00.000Z', 1, 'gal', 'Dry', 'Secondary / Clearing', 1.042, 0.997, '2026-08-29T17:00:00.000Z', '2026-08-29T17:00:00.000Z', '00000000-0000-4000-8000-000000000002', 'PLACEHOLDER — values from spec comparison example (v1). Replace with paper notes.', '2026-09-11T12:00:00.000Z', '2026-09-11T12:00:00.000Z', '00000000-0000-4000-8000-000000000101', 'CIDER-2026-001', 'Blueberry Cider', 'Cider', '2026-08-20'),
-  ('Dry sparkling cider', null, '2026-08-01T17:00:00.000Z', 5, 'gal', 'Sparkling', 'Bottle Conditioning', 1.05, 1, '2026-08-22T17:00:00.000Z', '2026-08-22T17:00:00.000Z', null, 'PLACEHOLDER — OG/FG estimated. Replace with paper notes.', '2026-09-11T12:00:00.000Z', '2026-09-11T12:00:00.000Z', '00000000-0000-4000-8000-000000000102', 'CIDER-2026-002', '5-Gallon Apple Cider', 'Cider', '2026-08-01')
+insert into batches (style, recipe_id, pitch_date, target_volume, volume_unit, goal, stage, og, fg, fg_confirmed_at, fermentation_complete_at, current_vessel_id, notes, parent_batch_id, lot_label, split_at, created_at, updated_at, id, batch_code, name, beverage_type, batch_date) values
+  ('Blueberry melomel', null, '2026-08-30T17:00:00.000Z', 1, 'gal', 'Semi-dry', 'Primary Fermentation', 1.12, null, null, null, '00000000-0000-4000-8000-000000000001', 'PLACEHOLDER — values from spec examples. Replace with paper notes.', null, null, null, '2026-09-11T12:00:00.000Z', '2026-09-11T12:00:00.000Z', '00000000-0000-4000-8000-000000000100', 'MEAD-2026-001', 'Blueberry Mead', 'Melomel', '2026-08-30'),
+  ('Fruit cider', null, '2026-08-20T17:00:00.000Z', 1, 'gal', 'Dry', 'Secondary / Clearing', 1.042, 0.997, '2026-08-29T17:00:00.000Z', '2026-08-29T17:00:00.000Z', '00000000-0000-4000-8000-000000000002', 'PLACEHOLDER — values from spec comparison example (v1). Replace with paper notes.', null, null, null, '2026-09-11T12:00:00.000Z', '2026-09-11T12:00:00.000Z', '00000000-0000-4000-8000-000000000101', 'CIDER-2026-001', 'Blueberry Cider', 'Cider', '2026-08-20'),
+  ('Dry cider', null, '2026-08-30T17:00:00.000Z', 5, 'gal', 'Dry', 'Primary Fermentation', 1.05, null, null, null, '00000000-0000-4000-8000-000000000004', 'PLACEHOLDER gravity readings — replace with paper notes. Plan: rack and split into 3 × 1.5 gal (1.5 g ginger / 2.5 g ginger / control).', null, null, null, '2026-09-11T12:00:00.000Z', '2026-09-11T12:00:00.000Z', '00000000-0000-4000-8000-000000000102', 'CIDER-2026-002', '5-Gallon Apple Cider', 'Cider', '2026-08-30')
 on conflict (id) do nothing;
 
 insert into batch_ingredients (id, batch_id, category, name, amount, unit, brand, variety, lot, addition_stage, added_at, removed_at, oak_toast, oak_form, notes, created_at) values
@@ -30,15 +33,14 @@ insert into batch_ingredients (id, batch_id, category, name, amount, unit, brand
   ('00000000-0000-4000-8000-000000000310', '00000000-0000-4000-8000-000000000101', 'Juice', 'Apple juice', 1, 'gal', null, null, null, 'Primary', '2026-08-20T17:00:00.000Z', null, null, null, 'No preservatives', '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000000311', '00000000-0000-4000-8000-000000000101', 'Fruit', 'Blueberries', 2, 'lb', null, null, null, 'Primary', '2026-08-20T17:00:00.000Z', null, null, null, null, '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000000312', '00000000-0000-4000-8000-000000000101', 'Fining Agent', 'Bentonite', 1, 'tsp', null, null, null, 'Secondary', '2026-09-06T17:00:00.000Z', null, null, null, null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000000320', '00000000-0000-4000-8000-000000000102', 'Juice', 'Apple juice', 5, 'gal', null, null, null, 'Primary', '2026-08-01T17:00:00.000Z', null, null, null, null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000000321', '00000000-0000-4000-8000-000000000102', 'Nutrient', 'Fermaid-O', 5, 'g', null, null, null, 'Primary', '2026-08-01T17:00:00.000Z', null, null, null, null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000000322', '00000000-0000-4000-8000-000000000102', 'Sugar', 'Table sugar (priming)', 118, 'g', null, null, null, 'Packaging', '2026-09-02T17:00:00.000Z', null, null, null, null, '2026-09-11T12:00:00.000Z')
+  ('00000000-0000-4000-8000-000000000320', '00000000-0000-4000-8000-000000000102', 'Juice', 'Apple juice', 5, 'gal', null, null, null, 'Primary', '2026-08-30T17:00:00.000Z', null, null, null, null, '2026-09-11T12:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000000321', '00000000-0000-4000-8000-000000000102', 'Nutrient', 'Fermaid-O', 5, 'g', null, null, null, 'Primary', '2026-08-30T17:00:00.000Z', null, null, null, null, '2026-09-11T12:00:00.000Z')
 on conflict (id) do nothing;
 
 insert into yeasts (id, batch_id, manufacturer, strain, amount, unit, pitched_at, rehydrated, rehydration_temp, rehydration_temp_unit, rehydration_minutes, rehydration_medium, lot, expiration, notes, created_at) values
   ('00000000-0000-4000-8000-000000000400', '00000000-0000-4000-8000-000000000100', 'Lalvin', '71B', 5, 'g', '2026-08-30T17:00:00.000Z', true, null, null, null, 'Go-Ferm', null, null, null, '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000000410', '00000000-0000-4000-8000-000000000101', 'Lalvin', '71B', 5, 'g', '2026-08-20T17:00:00.000Z', false, null, null, null, null, null, null, null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000000420', '00000000-0000-4000-8000-000000000102', 'Lalvin', 'K1-V1116', 5, 'g', '2026-08-01T17:00:00.000Z', true, null, null, null, 'Water', null, null, null, '2026-09-11T12:00:00.000Z')
+  ('00000000-0000-4000-8000-000000000420', '00000000-0000-4000-8000-000000000102', 'Lalvin', 'K1-V1116', 5, 'g', '2026-08-30T17:00:00.000Z', true, null, null, null, 'Water', null, null, null, '2026-09-11T12:00:00.000Z')
 on conflict (id) do nothing;
 
 insert into batch_events (id, batch_id, occurred_at, type, stage, vessel_id, title, notes, created_at) values
@@ -65,17 +67,12 @@ insert into batch_events (id, batch_id, occurred_at, type, stage, vessel_id, tit
   ('00000000-0000-4000-8000-000000000713', '00000000-0000-4000-8000-000000000101', '2026-08-29T17:00:00.000Z', 'Fermentation Complete', 'Primary Fermentation', null, null, 'FG 0.997 confirmed', '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000000714', '00000000-0000-4000-8000-000000000101', '2026-09-06T17:00:00.000Z', 'Racked', 'Secondary / Clearing', null, null, 'Jar #3 → Jar #2, 128 → 125 oz', '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000000715', '00000000-0000-4000-8000-000000000101', '2026-09-06T17:00:00.000Z', 'Fining Added', 'Secondary / Clearing', null, null, 'Bentonite 1 tsp', '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000006200', '00000000-0000-4000-8000-000000000102', '2026-08-01T17:00:00.000Z', 'Gravity Reading', 'Primary Fermentation', null, null, 'SG 1.050 · 66°F', '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000006201', '00000000-0000-4000-8000-000000000102', '2026-08-05T17:00:00.000Z', 'Gravity Reading', 'Primary Fermentation', null, null, 'SG 1.030 · 68°F', '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000006202', '00000000-0000-4000-8000-000000000102', '2026-08-10T17:00:00.000Z', 'Gravity Reading', 'Primary Fermentation', null, null, 'SG 1.010 · 67°F', '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000006203', '00000000-0000-4000-8000-000000000102', '2026-08-15T17:00:00.000Z', 'Gravity Reading', 'Primary Fermentation', null, null, 'SG 1.002 · 66°F', '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000006204', '00000000-0000-4000-8000-000000000102', '2026-08-22T17:00:00.000Z', 'Gravity Reading', 'Primary Fermentation', null, null, 'SG 1.000 · 66°F', '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000006205', '00000000-0000-4000-8000-000000000102', '2026-09-02T17:00:00.000Z', 'Gravity Reading', 'Primary Fermentation', null, null, 'SG 1.000 · 66°F', '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000000720', '00000000-0000-4000-8000-000000000102', '2026-08-01T17:00:00.000Z', 'Batch Created', 'Planning', null, null, null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000000721', '00000000-0000-4000-8000-000000000102', '2026-08-01T17:00:00.000Z', 'Yeast Pitched', 'Primary Fermentation', null, null, 'Lalvin K1-V1116', '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000000722', '00000000-0000-4000-8000-000000000102', '2026-08-22T17:00:00.000Z', 'Fermentation Complete', 'Primary Fermentation', null, null, 'FG 1.000 confirmed', '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000000723', '00000000-0000-4000-8000-000000000102', '2026-08-23T17:00:00.000Z', 'Racked', 'Secondary / Clearing', null, null, '6.5 gal carboy → 5 gal carboy', '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000000724', '00000000-0000-4000-8000-000000000102', '2026-09-02T17:00:00.000Z', 'Bottled', 'Bottle Conditioning', null, null, '26 × 22 oz bombers, 118 g table sugar, target 2.6 vol', '2026-09-11T12:00:00.000Z')
+  ('00000000-0000-4000-8000-000000006200', '00000000-0000-4000-8000-000000000102', '2026-08-30T17:00:00.000Z', 'Gravity Reading', 'Primary Fermentation', null, null, 'SG 1.050 · 66°F', '2026-09-11T12:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000006201', '00000000-0000-4000-8000-000000000102', '2026-09-03T17:00:00.000Z', 'Gravity Reading', 'Primary Fermentation', null, null, 'SG 1.032 · 68°F', '2026-09-11T12:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000006202', '00000000-0000-4000-8000-000000000102', '2026-09-07T17:00:00.000Z', 'Gravity Reading', 'Primary Fermentation', null, null, 'SG 1.016 · 67°F', '2026-09-11T12:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000006203', '00000000-0000-4000-8000-000000000102', '2026-09-10T17:00:00.000Z', 'Gravity Reading', 'Primary Fermentation', null, null, 'SG 1.008 · 66°F', '2026-09-11T12:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000000720', '00000000-0000-4000-8000-000000000102', '2026-08-30T17:00:00.000Z', 'Batch Created', 'Planning', null, null, null, '2026-09-11T12:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000000721', '00000000-0000-4000-8000-000000000102', '2026-08-30T17:00:00.000Z', 'Yeast Pitched', 'Primary Fermentation', null, null, 'Lalvin K1-V1116', '2026-09-11T12:00:00.000Z')
 on conflict (id) do nothing;
 
 insert into batch_measurements (id, batch_id, event_id, measured_at, type, value, unit, stage, vessel_id, notes, created_at) values
@@ -99,23 +96,18 @@ insert into batch_measurements (id, batch_id, event_id, measured_at, type, value
   ('00000000-0000-4000-8000-000000012103', '00000000-0000-4000-8000-000000000101', '00000000-0000-4000-8000-000000006103', '2026-08-29T17:00:00.000Z', 'temp', 68, 'F', 'Primary Fermentation', '00000000-0000-4000-8000-000000000003', null, '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000011104', '00000000-0000-4000-8000-000000000101', '00000000-0000-4000-8000-000000006104', '2026-09-05T17:00:00.000Z', 'sg', 0.997, 'SG', 'Primary Fermentation', '00000000-0000-4000-8000-000000000003', null, '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000012104', '00000000-0000-4000-8000-000000000101', '00000000-0000-4000-8000-000000006104', '2026-09-05T17:00:00.000Z', 'temp', 67, 'F', 'Primary Fermentation', '00000000-0000-4000-8000-000000000003', null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000011200', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006200', '2026-08-01T17:00:00.000Z', 'sg', 1.05, 'SG', 'Primary Fermentation', '00000000-0000-4000-8000-000000000005', null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000012200', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006200', '2026-08-01T17:00:00.000Z', 'temp', 66, 'F', 'Primary Fermentation', '00000000-0000-4000-8000-000000000005', null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000011201', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006201', '2026-08-05T17:00:00.000Z', 'sg', 1.03, 'SG', 'Primary Fermentation', '00000000-0000-4000-8000-000000000005', null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000012201', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006201', '2026-08-05T17:00:00.000Z', 'temp', 68, 'F', 'Primary Fermentation', '00000000-0000-4000-8000-000000000005', null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000011202', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006202', '2026-08-10T17:00:00.000Z', 'sg', 1.01, 'SG', 'Primary Fermentation', '00000000-0000-4000-8000-000000000005', null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000012202', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006202', '2026-08-10T17:00:00.000Z', 'temp', 67, 'F', 'Primary Fermentation', '00000000-0000-4000-8000-000000000005', null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000011203', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006203', '2026-08-15T17:00:00.000Z', 'sg', 1.002, 'SG', 'Primary Fermentation', '00000000-0000-4000-8000-000000000005', null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000012203', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006203', '2026-08-15T17:00:00.000Z', 'temp', 66, 'F', 'Primary Fermentation', '00000000-0000-4000-8000-000000000005', null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000011204', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006204', '2026-08-22T17:00:00.000Z', 'sg', 1, 'SG', 'Primary Fermentation', '00000000-0000-4000-8000-000000000005', null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000012204', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006204', '2026-08-22T17:00:00.000Z', 'temp', 66, 'F', 'Primary Fermentation', '00000000-0000-4000-8000-000000000005', null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000011205', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006205', '2026-09-02T17:00:00.000Z', 'sg', 1, 'SG', 'Primary Fermentation', '00000000-0000-4000-8000-000000000005', null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000012205', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006205', '2026-09-02T17:00:00.000Z', 'temp', 66, 'F', 'Primary Fermentation', '00000000-0000-4000-8000-000000000005', null, '2026-09-11T12:00:00.000Z')
+  ('00000000-0000-4000-8000-000000011200', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006200', '2026-08-30T17:00:00.000Z', 'sg', 1.05, 'SG', 'Primary Fermentation', '00000000-0000-4000-8000-000000000004', null, '2026-09-11T12:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000012200', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006200', '2026-08-30T17:00:00.000Z', 'temp', 66, 'F', 'Primary Fermentation', '00000000-0000-4000-8000-000000000004', null, '2026-09-11T12:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000011201', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006201', '2026-09-03T17:00:00.000Z', 'sg', 1.032, 'SG', 'Primary Fermentation', '00000000-0000-4000-8000-000000000004', null, '2026-09-11T12:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000012201', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006201', '2026-09-03T17:00:00.000Z', 'temp', 68, 'F', 'Primary Fermentation', '00000000-0000-4000-8000-000000000004', null, '2026-09-11T12:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000011202', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006202', '2026-09-07T17:00:00.000Z', 'sg', 1.016, 'SG', 'Primary Fermentation', '00000000-0000-4000-8000-000000000004', null, '2026-09-11T12:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000012202', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006202', '2026-09-07T17:00:00.000Z', 'temp', 67, 'F', 'Primary Fermentation', '00000000-0000-4000-8000-000000000004', null, '2026-09-11T12:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000011203', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006203', '2026-09-10T17:00:00.000Z', 'sg', 1.008, 'SG', 'Primary Fermentation', '00000000-0000-4000-8000-000000000004', null, '2026-09-11T12:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000012203', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000006203', '2026-09-10T17:00:00.000Z', 'temp', 66, 'F', 'Primary Fermentation', '00000000-0000-4000-8000-000000000004', null, '2026-09-11T12:00:00.000Z')
 on conflict (id) do nothing;
 
-insert into batch_transfers (id, batch_id, event_id, transferred_at, from_vessel_id, to_vessel_id, volume_before, volume_after, volume_unit, method, reason, headspace, notes, created_at) values
-  ('00000000-0000-4000-8000-000000000900', '00000000-0000-4000-8000-000000000101', null, '2026-09-06T17:00:00.000Z', '00000000-0000-4000-8000-000000000003', '00000000-0000-4000-8000-000000000002', 128, 125, 'oz', 'Auto-siphon', 'Remove from lees / fruit', null, 'Clear, minimal sediment', '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000000910', '00000000-0000-4000-8000-000000000102', null, '2026-08-23T17:00:00.000Z', '00000000-0000-4000-8000-000000000005', '00000000-0000-4000-8000-000000000004', 5, 4.8, 'gal', 'Auto-siphon', 'Off lees for clearing', null, null, '2026-09-11T12:00:00.000Z')
+insert into batch_transfers (id, batch_id, event_id, transferred_at, from_vessel_id, to_vessel_id, to_batch_id, volume_before, volume_after, volume_unit, method, reason, headspace, notes, created_at) values
+  ('00000000-0000-4000-8000-000000000900', '00000000-0000-4000-8000-000000000101', null, '2026-09-06T17:00:00.000Z', '00000000-0000-4000-8000-000000000003', '00000000-0000-4000-8000-000000000002', null, 128, 125, 'oz', 'Auto-siphon', 'Remove from lees / fruit', null, 'Clear, minimal sediment', '2026-09-11T12:00:00.000Z')
 on conflict (id) do nothing;
 
 insert into nutrient_additions (id, batch_id, nutrient, addition_number, planned_at, planned_point, planned_amount, actual_at, actual_amount, unit, notes, created_at) values
@@ -124,13 +116,9 @@ insert into nutrient_additions (id, batch_id, nutrient, addition_number, planned
   ('00000000-0000-4000-8000-000000000502', '00000000-0000-4000-8000-000000000100', 'Fermaid-O', 3, '2026-09-01T17:00:00.000Z', '48 hr', 1.5, '2026-09-01T17:00:00.000Z', 1.5, 'g', null, '2026-09-11T12:00:00.000Z')
 on conflict (id) do nothing;
 
-insert into packaging_events (id, batch_id, event_id, packaged_at, pre_sg, packaged_volume, volume_unit, package_type, container_size, size_unit, quantity, closure, priming_sugar_type, priming_sugar_grams, target_co2, conditioning_temp, temp_unit, conditioning_start, expected_ready_at, notes, created_at) values
-  ('00000000-0000-4000-8000-000000001000', '00000000-0000-4000-8000-000000000102', null, '2026-09-02T17:00:00.000Z', 1, 4.6, 'gal', 'Crown-cap beer bottle', 22, 'oz', 26, '26 mm crown cap', 'sucrose', 118, 2.6, 68, 'F', '2026-09-02T17:00:00.000Z', '2026-09-16T17:00:00.000Z', 'PLACEHOLDER count', '2026-09-11T12:00:00.000Z')
-on conflict (id) do nothing;
-
 insert into reminders (id, batch_id, title, due_at, done, created_at) values
   ('00000000-0000-4000-8000-000000000800', '00000000-0000-4000-8000-000000000100', 'Gravity check', '2026-09-12T17:00:00.000Z', false, '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000000810', '00000000-0000-4000-8000-000000000101', 'Check clarity; rack off bentonite', '2026-09-14T17:00:00.000Z', false, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000000820', '00000000-0000-4000-8000-000000000102', 'Check bottle carbonation', '2026-09-16T17:00:00.000Z', false, '2026-09-11T12:00:00.000Z')
+  ('00000000-0000-4000-8000-000000000821', '00000000-0000-4000-8000-000000000102', 'Rack and split into 3 × 1.5 gal: 1.5 g ginger / 2.5 g ginger / control', '2026-09-19T17:00:00.000Z', false, '2026-09-11T12:00:00.000Z')
 on conflict (id) do nothing;
 commit;

@@ -9,27 +9,34 @@ import { useStore } from '@/lib/store'
 import { cn, WORDMARK } from '@/lib/utils'
 import { ToastProvider } from '@/components/ui/Toast'
 import { LogActivityDialog } from '@/components/LogActivityDialog'
+import { SplitDialog } from '@/components/batch/SplitDialog'
 import { StatusPill } from '@/components/ui/Badge'
 
 interface ShellCtx {
   openLog: (batchId?: string, preset?: string) => void
+  openSplit: (batchId: string) => void
 }
-const Ctx = React.createContext<ShellCtx>({ openLog: () => {} })
+const Ctx = React.createContext<ShellCtx>({ openLog: () => {}, openSplit: () => {} })
 export const useShell = () => React.useContext(Ctx)
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [navOpen, setNavOpen] = React.useState(false)
   const [log, setLog] = React.useState<{ open: boolean; batchId?: string; preset?: string }>({ open: false })
+  const [split, setSplit] = React.useState<string | null>(null)
   const { mode, error } = useStore()
 
   React.useEffect(() => setNavOpen(false), [pathname])
 
   const openLog = React.useCallback((batchId?: string, preset?: string) => setLog({ open: true, batchId, preset }), [])
+  const openSplit = React.useCallback((batchId: string) => {
+    setLog({ open: false })
+    setSplit(batchId)
+  }, [])
 
   return (
     <ToastProvider>
-      <Ctx.Provider value={{ openLog }}>
+      <Ctx.Provider value={{ openLog, openSplit }}>
         <div className="app-layout">
           <MobileHeader onMenu={() => setNavOpen(true)} />
           <Sidebar open={navOpen} pathname={pathname} mode={mode} />
@@ -55,6 +62,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             preset={log.preset}
             onClose={() => setLog({ open: false })}
           />
+          <SplitDialog batchId={split} open={split !== null} onClose={() => setSplit(null)} />
         </div>
       </Ctx.Provider>
     </ToastProvider>

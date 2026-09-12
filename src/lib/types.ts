@@ -16,6 +16,7 @@ export const BATCH_STAGES = [
   'Packaged / Aging',
   'Finished',
   'Archived',
+  'Split',
 ] as const
 export type BatchStage = (typeof BATCH_STAGES)[number]
 
@@ -91,6 +92,7 @@ export const ACTIVITY_TYPES = [
   'Problem / Deviation',
   'Fermentation Complete',
   'Stage Changed',
+  'Split into Sub-lots',
   'Other',
 ] as const
 export type ActivityType = (typeof ACTIVITY_TYPES)[number]
@@ -125,6 +127,9 @@ export interface Batch {
   fermentation_complete_at: string | null
   current_vessel_id: string | null
   notes: string | null
+  parent_batch_id: string | null
+  lot_label: string | null
+  split_at: string | null
   created_at: string
   updated_at: string
 }
@@ -211,6 +216,7 @@ export interface Transfer {
   transferred_at: string
   from_vessel_id: string | null
   to_vessel_id: string | null
+  to_batch_id: string | null
   volume_before: number | null
   volume_after: number | null
   volume_unit: VolumeUnit

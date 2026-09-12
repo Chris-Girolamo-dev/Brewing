@@ -4,7 +4,7 @@ import * as React from 'react'
 import Link from 'next/link'
 import { Download, LayoutGrid, List, Plus, Search } from 'lucide-react'
 import { useStore } from '@/lib/store'
-import { buildBatchView, isActive, stageTone } from '@/lib/derive'
+import { buildBatchView, isActive, stageTone, type BatchView } from '@/lib/derive'
 import { PageHeader, Loading } from '@/components/PageHeader'
 import { BatchCard } from '@/components/BatchCard'
 import { Button } from '@/components/ui/Button'
@@ -34,7 +34,7 @@ export default function BatchesPage() {
   const views = React.useMemo(() => {
     const needle = q.trim().toLowerCase()
     return data.batches
-      .filter((b) => (scope === 'active' ? isActive(b) : scope === 'finished' ? !isActive(b) : true))
+      .filter((b) => (scope === 'active' ? isActive(b) || b.stage === 'Split' : scope === 'finished' ? !isActive(b) && b.stage !== 'Split' : true))
       .filter((b) => !type || b.beverage_type === type)
       .filter((b) => !stage || b.stage === stage)
       .map((b) => buildBatchView(data, b, prefs))
@@ -53,7 +53,16 @@ export default function BatchesPage() {
           .toLowerCase()
         return hay.includes(needle)
       })
-      .sort((a, b) => (b.batch.pitch_date ?? b.batch.batch_date).localeCompare(a.batch.pitch_date ?? a.batch.batch_date))
+      .sort((a, b) => {
+        // Newest family first; children immediately after their parent, in code order.
+        const fam = (v: BatchView) => v.parent ?? v.batch
+        const ka = fam(a)
+        const kb = fam(b)
+        if (ka.id !== kb.id) return (kb.pitch_date ?? kb.batch_date).localeCompare(ka.pitch_date ?? ka.batch_date)
+        if (!a.parent) return -1
+        if (!b.parent) return 1
+        return a.batch.batch_code.localeCompare(b.batch.batch_code, undefined, { numeric: true })
+      })
   }, [data, prefs, q, scope, type, stage, yeast])
 
   if (!ready) return <Loading />
@@ -129,7 +138,7 @@ export default function BatchesPage() {
       {views.length === 0 ? (
         <EmptyState title="No batches match" hint="Adjust filters or create a new batch." />
       ) : layout === 'grid' ? (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {views.map((v) => (
             <BatchCard key={v.batch.id} view={v} />
           ))}
@@ -153,8 +162,9 @@ export default function BatchesPage() {
           <tbody>
             {views.map((v) => (
               <TR key={v.batch.id}>
-                <TD>
+                <TD className={v.parent ? 'pl-8' : ''}>
                   <Link href={`/batches/${v.batch.id}`} className="font-medium text-fg hover:underline">
+                    {v.parent ? '↳ ' : ''}
                     {v.batch.name}
                   </Link>
                   <div className="font-mono text-[10.5px] uppercase text-text-3">{v.batch.batch_code}</div>

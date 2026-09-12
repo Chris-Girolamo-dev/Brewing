@@ -1179,10 +1179,10 @@ export function DuplicateDialog({ view, open, onClose, mode }: { view: BatchView
   }, [open, mode, view.batch.name])
 
   const recipeIngredients = (): RecipeIngredient[] =>
-    view.ingredients
+    [...view.inheritedIngredients, ...view.ingredients]
       .filter((i) => i.addition_stage !== 'Packaging')
       .map((i) => ({ category: i.category, name: i.name, amount: i.amount, unit: i.unit, brand: i.brand, variety: i.variety, addition_stage: i.addition_stage, notes: i.notes }))
-  const recipeYeasts = (): RecipeYeast[] => view.yeasts.map((y) => ({ manufacturer: y.manufacturer, strain: y.strain, amount: y.amount, unit: y.unit, notes: y.notes }))
+  const recipeYeasts = (): RecipeYeast[] => [...view.inheritedYeasts, ...view.yeasts].map((y) => ({ manufacturer: y.manufacturer, strain: y.strain, amount: y.amount, unit: y.unit, notes: y.notes }))
 
   async function saveRecipe(): Promise<Recipe> {
     const existing = data.recipes.filter((r) => r.name.toLowerCase() === name.trim().toLowerCase())
@@ -1231,6 +1231,9 @@ export function DuplicateDialog({ view, open, onClose, mode }: { view: BatchView
       fermentation_complete_at: null,
       current_vessel_id: null,
       notes: `Duplicated from ${view.batch.batch_code}`,
+      parent_batch_id: null,
+      lot_label: null,
+      split_at: null,
       updated_at: new Date().toISOString(),
     })
     for (const i of recipeIngredients()) {
@@ -1277,7 +1280,8 @@ export function DuplicateDialog({ view, open, onClose, mode }: { view: BatchView
         <Input autoFocus value={name} onChange={(e) => setName(e.target.value)} />
       </Field>
       <div className="mt-3 text-xs text-text-3">
-        {view.ingredients.length} ingredients · {view.yeasts.length} yeast
+        {view.inheritedIngredients.length + view.ingredients.length} ingredients · {view.inheritedYeasts.length + view.yeasts.length} yeast
+        {view.parent ? ` (includes inherited from ${view.parent.batch_code})` : ''}
       </div>
     </Dialog>
   )

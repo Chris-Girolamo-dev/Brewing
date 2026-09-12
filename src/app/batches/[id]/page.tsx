@@ -19,6 +19,9 @@ import {
   Trash2,
   Wine,
   Thermometer,
+  Split,
+  GitBranch,
+  BarChart3,
 } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { buildBatchView, stageTone } from '@/lib/derive'
@@ -58,7 +61,7 @@ export default function BatchDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const { data, prefs, ready, touchBatch, remove, update } = useStore()
-  const { openLog } = useShell()
+  const { openLog, openSplit } = useShell()
   const [tab, setTab] = React.useState<Tab>('overview')
   const [dlg, setDlg] = React.useState<string | null>(null)
   const [editIng, setEditIng] = React.useState<BatchIngredient | null>(null)
@@ -78,6 +81,7 @@ export default function BatchDetailPage() {
   const showStable = view.stability.stable && batch.fg == null
 
   async function deleteBatch() {
+    if (view!.children.length > 0) return
     await remove('batches', batch!.id)
     router.push('/batches')
   }
@@ -101,8 +105,17 @@ export default function BatchDetailPage() {
             <Link href="/batches" className="hover:text-fg">
               Batches
             </Link>
+            {view.parent && (
+              <>
+                <span>/</span>
+                <Link href={`/batches/${view.parent.id}`} className="hover:text-fg">
+                  {view.parent.batch_code}
+                </Link>
+              </>
+            )}
             <span>/</span>
-            <span>{batch.batch_code}</span>
+            <span>{view.parent ? `-${batch.batch_code.slice(view.parent.batch_code.length + 1)}` : batch.batch_code}</span>
+            {batch.lot_label && <span className="rounded bg-accent-soft px-1.5 text-accent normal-case tracking-normal">{batch.lot_label}</span>}
           </span>
         }
         title={batch.name}
@@ -112,11 +125,19 @@ export default function BatchDetailPage() {
             <span className="font-mono text-xs">Day {view.dayNumber ?? '—'}</span>
             <span className="text-text-3">·</span>
             <span>{batch.beverage_type}{batch.style ? ` · ${batch.style}` : ''}</span>
-            {view.vessel && (
+            {!view.isSplitParent && (
+              <>
+                <span className="text-text-3">·</span>
+                <button type="button" onClick={() => setDlg('edit')} className="inline-flex items-center gap-1 hover:text-fg" title="Change vessel">
+                  <FlaskConical size={12} /> {view.vessel?.name ?? 'No vessel'}
+                </button>
+              </>
+            )}
+            {view.isSplitParent && (
               <>
                 <span className="text-text-3">·</span>
                 <span className="inline-flex items-center gap-1">
-                  <FlaskConical size={12} /> {view.vessel.name}
+                  <GitBranch size={12} /> {view.children.length} sub-lots
                 </span>
               </>
             )}
@@ -124,12 +145,23 @@ export default function BatchDetailPage() {
         }
         actions={
           <>
-            <Button onClick={() => openLog(batch.id, 'Gravity Reading')}>
-              <Droplets /> Log gravity
-            </Button>
-            <Button variant="secondary" onClick={() => openLog(batch.id)}>
-              <Plus /> Log activity
-            </Button>
+            {!view.isSplitParent && (
+              <>
+                <Button onClick={() => openLog(batch.id, 'Gravity Reading')}>
+                  <Droplets /> Log gravity
+                </Button>
+                <Button variant="secondary" onClick={() => openLog(batch.id)}>
+                  <Plus /> Log activity
+                </Button>
+              </>
+            )}
+            {view.isSplitParent && view.children.length > 1 && (
+              <Link href={`/analytics?ids=${view.children.map((c) => c.id).join(',')}`}>
+                <Button variant="secondary">
+                  <BarChart3 /> Compare sub-lots
+                </Button>
+              </Link>
+            )}
             <div className="relative">
               <Button variant="outline" size="icon" onClick={() => setMenu((m) => !m)} aria-label="More">
                 <MoreHorizontal />
@@ -138,6 +170,7 @@ export default function BatchDetailPage() {
                 <div className="absolute right-0 top-full z-20 mt-1 w-52 rounded-xl border border-border-2 bg-elevated p-1 shadow-[var(--shadow-lg)]" onMouseLeave={() => setMenu(false)}>
                   {[
                     ['edit', 'Edit batch', Pencil],
+                    ...(!batch.parent_batch_id && !view.isSplitParent ? [['split', 'Split into sub-lots', Split]] : []),
                     ['duplicate', 'Duplicate batch', Copy],
                     ['recipe', 'Save as recipe', BookmarkPlus],
                     ['reminder', 'Add reminder', Bell],
@@ -152,6 +185,7 @@ export default function BatchDetailPage() {
                         onClick={() => {
                           setMenu(false)
                           if (k === 'csv') exportBatchCsv(view)
+                          else if (k === 'split') openSplit(batch.id)
                           else setDlg(k as string)
                         }}
                       >
@@ -180,6 +214,14 @@ export default function BatchDetailPage() {
         </div>
       )}
 
+      {view.isSplitParent ? (
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <MetricCard label="OG" value={formatGravity(view.og)} />
+          <MetricCard label="Sub-lots" value={view.children.length} trend={batch.split_at ? `Split ${fmtDate(batch.split_at)}` : undefined} />
+          <MetricCard label="Packaged (all lots)" value={view.packagedLiters != null ? formatVolume(view.packagedLiters, 'L', prefs.unit_system) : '—'} />
+          <MetricCard label="Original volume" value={formatVolume(batch.target_volume, batch.volume_unit, prefs.unit_system)} trend={view.yieldPct != null ? `${view.yieldPct}% yield` : undefined} />
+        </div>
+      ) : (
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <MetricCard label="OG" value={formatGravity(view.og)} />
         <MetricCard
@@ -195,7 +237,9 @@ export default function BatchDetailPage() {
         />
         <MetricCard label="Volume" value={formatVolume(batch.target_volume, batch.volume_unit, prefs.unit_system)} trend={view.yieldPct != null ? `${view.yieldPct}% yield packaged` : undefined} />
       </div>
+      )}
 
+      {!view.isSplitParent && (
       <div className="mt-5 flex flex-wrap gap-2">
         <Button size="sm" variant="secondary" onClick={() => setDlg('ingredient')}>
           <Plus /> Add ingredient
@@ -217,18 +261,69 @@ export default function BatchDetailPage() {
         </Button>
         <div className="ml-auto w-48">
           <Select value={batch.stage} onChange={(e) => touchBatch(batch.id, { stage: e.target.value as typeof batch.stage })} className="h-8 text-xs">
-            {BATCH_STAGES.map((s) => (
+            {BATCH_STAGES.filter((s) => s !== 'Split').map((s) => (
               <option key={s}>{s}</option>
             ))}
           </Select>
         </div>
       </div>
+      )}
+
+      {view.isSplitParent && (
+        <Card className="mt-5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <GitBranch size={14} className="text-accent" /> Sub-lots
+            </CardTitle>
+            <span className="text-xs text-text-3">This batch is an aggregate record. Log activity on each sub-lot.</span>
+          </CardHeader>
+          <CardBody className="pt-3">
+            <Table>
+              <thead>
+                <tr>
+                  <TH>Lot</TH>
+                  <TH>Stage</TH>
+                  <TH>Vessel</TH>
+                  <TH className="text-right">Volume</TH>
+                  <TH className="text-right">SG</TH>
+                  <TH className="text-right">ABV</TH>
+                  <TH>Additions</TH>
+                  <TH className="text-right">Packaged</TH>
+                  <TH className="text-right">Rating</TH>
+                </tr>
+              </thead>
+              <tbody>
+                {view.childSummaries.map((c) => (
+                  <TR key={c.batch.id}>
+                    <TD>
+                      <Link href={`/batches/${c.batch.id}`} className="font-medium text-fg hover:underline">
+                        {c.batch.lot_label ?? c.batch.name}
+                      </Link>
+                      <div className="font-mono text-[10.5px] uppercase text-text-3">{c.batch.batch_code}</div>
+                    </TD>
+                    <TD>
+                      <StatusPill tone={stageTone(c.batch.stage)}>{c.batch.stage}</StatusPill>
+                    </TD>
+                    <TD>{c.vessel?.name ?? '—'}</TD>
+                    <TD className="text-right font-mono tabular">{formatVolume(c.batch.target_volume, c.batch.volume_unit, prefs.unit_system)}</TD>
+                    <TD className="text-right font-mono tabular">{formatGravity(c.latestSg)}</TD>
+                    <TD className="text-right font-mono tabular">{(c.finalAbv ?? c.estAbv) != null ? `${c.finalAbv ?? `~${c.estAbv}`}%` : '—'}</TD>
+                    <TD className="max-w-[220px] truncate">{c.ownAdditions.map((i) => `${i.name}${i.amount != null ? ` ${i.amount} ${i.unit ?? ''}` : ''}`).join(', ') || 'Control'}</TD>
+                    <TD className="text-right font-mono tabular">{c.packagedLiters != null ? formatVolume(c.packagedLiters, 'L', prefs.unit_system) : '—'}</TD>
+                    <TD className="text-right font-mono tabular">{c.avgRating ?? '—'}</TD>
+                  </TR>
+                ))}
+              </tbody>
+            </Table>
+          </CardBody>
+        </Card>
+      )}
 
       <Tabs<Tab> className="mt-5" options={tabs} value={tab} onChange={setTab} />
 
       <div className="mt-5">
         {tab === 'overview' && (
-          <div className="grid gap-5 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
             <div className="space-y-5 lg:col-span-2">
               <FermentationChart view={view} />
               <Card>
@@ -255,7 +350,7 @@ export default function BatchDetailPage() {
                   <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
                     <Row k="Pitched" v={fmtDate(batch.pitch_date)} />
                     <Row k="Goal" v={batch.goal ?? '—'} />
-                    <Row k="Yeast" v={view.yeasts.map((y) => `${y.manufacturer ?? ''} ${y.strain}`.trim()).join(', ') || '—'} />
+                    <Row k="Yeast" v={[...view.inheritedYeasts, ...view.yeasts].map((y) => `${y.manufacturer ?? ''} ${y.strain}`.trim()).join(', ') || '—'} />
                     <Row k="Vessel" v={view.vessel?.name ?? '—'} />
                     <Row k="Primary" v={view.primaryDays != null ? `${view.primaryDays} days` : batch.fermentation_complete_at ? `${daysBetween(batch.pitch_date ?? batch.batch_date, batch.fermentation_complete_at)} days` : 'in progress'} />
                     <Row k="Aging" v={view.agingDays != null ? `${view.agingDays} days` : '—'} />
@@ -318,8 +413,14 @@ export default function BatchDetailPage() {
                 </Button>
               </CardHeader>
               <CardBody className="pt-3">
+                {view.inheritedYeasts.length > 0 && (
+                  <div className="mb-3 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-text-3">
+                    Inherited from {view.parent?.batch_code}: {view.inheritedYeasts.map((y) => `${y.manufacturer ?? ''} ${y.strain}`.trim()).join(', ')}
+                    {view.inheritedYeasts[0]?.pitched_at ? ` · pitched ${fmtDate(view.inheritedYeasts[0].pitched_at)}` : ''}
+                  </div>
+                )}
                 {view.yeasts.length === 0 ? (
-                  <div className="text-xs text-text-3">No yeast recorded.</div>
+                  <div className="text-xs text-text-3">{view.inheritedYeasts.length ? 'No additional yeast on this sub-lot.' : 'No yeast recorded.'}</div>
                 ) : (
                   <Table>
                     <thead>
@@ -348,7 +449,7 @@ export default function BatchDetailPage() {
                 )}
               </CardBody>
             </Card>
-            <IngredientTable view={view} title="Ingredients" filter={(i) => i.addition_stage !== 'Packaging'} onAdd={() => { setEditIng(null); setDlg('ingredient') }} onEdit={(i) => { setEditIng(i); setDlg('ingredient') }} />
+            <IngredientTable view={view} title="Ingredients" filter={(i) => i.addition_stage !== 'Packaging'} onAdd={() => { setEditIng(null); setDlg('ingredient') }} onEdit={(i) => { setEditIng(i); setDlg('ingredient') }} inherited={view.inheritedIngredients.filter((i) => i.addition_stage !== 'Packaging')} parentCode={view.parent?.batch_code} />
           </div>
         )}
 
@@ -431,6 +532,7 @@ export default function BatchDetailPage() {
                       <TH>Date</TH>
                       <TH>From</TH>
                       <TH>To</TH>
+                      <TH>Batch</TH>
                       <TH className="text-right">Before</TH>
                       <TH className="text-right">After</TH>
                       <TH className="text-right">Loss</TH>
@@ -447,6 +549,15 @@ export default function BatchDetailPage() {
                           <TD>{fmtDate(t.transferred_at)}</TD>
                           <TD>{vn(t.from_vessel_id)}</TD>
                           <TD className="text-fg">{vn(t.to_vessel_id)}</TD>
+                          <TD>
+                            {t.to_batch_id ? (
+                              <Link href={`/batches/${t.to_batch_id}`} className="font-mono text-xs text-accent hover:underline">
+                                {data.batches.find((b) => b.id === t.to_batch_id)?.batch_code ?? 'sub-lot'}
+                              </Link>
+                            ) : (
+                              '—'
+                            )}
+                          </TD>
                           <TD className="text-right font-mono tabular">{t.volume_before ?? '—'} {t.volume_unit}</TD>
                           <TD className="text-right font-mono tabular">{t.volume_after ?? '—'} {t.volume_unit}</TD>
                           <TD className={cn('text-right font-mono tabular', loss && loss > 0 ? 'text-warn' : '')}>{loss != null ? `${loss} ${t.volume_unit}` : '—'}</TD>
@@ -680,15 +791,21 @@ export default function BatchDetailPage() {
             <Button variant="ghost" onClick={close}>
               Cancel
             </Button>
-            <Button variant="danger" onClick={deleteBatch}>
+            <Button variant="danger" onClick={deleteBatch} disabled={view.children.length > 0}>
               Delete permanently
             </Button>
           </>
         }
       >
-        <p className="text-sm text-text-2">
-          This removes <strong className="text-fg">{batch.name}</strong> and all its events, measurements, transfers, packaging, and tastings. Consider archiving instead by setting the stage to Archived.
-        </p>
+        {view.children.length > 0 ? (
+          <p className="text-sm text-text-2">
+            <strong className="text-fg">{batch.name}</strong> has {view.children.length} sub-lots that inherit its history. Delete the sub-lots first, or set the stage to Archived.
+          </p>
+        ) : (
+          <p className="text-sm text-text-2">
+            This removes <strong className="text-fg">{batch.name}</strong> and all its events, measurements, transfers, packaging, and tastings. Consider archiving instead by setting the stage to Archived.
+          </p>
+        )}
       </Dialog>
     </>
   )
@@ -704,10 +821,13 @@ function Row({ k, v }: { k: string; v: string }) {
 }
 
 function Timeline({ view, limit }: { view: ReturnType<typeof buildBatchView>; limit?: number }) {
-  const { remove } = useStore()
+  const { remove, data } = useStore()
+  const [showInherited, setShowInherited] = React.useState(false)
   const events = limit ? view.events.slice(0, limit) : view.events
-  if (events.length === 0) return <div className="text-xs text-text-3">No activity yet.</div>
+  if (events.length === 0 && view.inheritedEvents.length === 0) return <div className="text-xs text-text-3">No activity yet.</div>
   return (
+    <>
+    {events.length === 0 && <div className="mb-3 text-xs text-text-3">No activity on this sub-lot yet.</div>}
     <ol className="relative ml-2 border-l border-border-2">
       {events.map((e) => {
         const measurements = view.measurements.filter((m) => m.event_id === e.id)
@@ -744,6 +864,42 @@ function Timeline({ view, limit }: { view: ReturnType<typeof buildBatchView>; li
         )
       })}
     </ol>
+    {!limit && view.parent && view.inheritedEvents.length > 0 && (
+      <div className="mt-4 border-t border-border pt-3">
+        <button type="button" className="text-xs text-text-3 hover:text-fg" onClick={() => setShowInherited((s) => !s)}>
+          {showInherited ? '▾' : '▸'} Inherited from {view.parent.batch_code} before the split ({view.inheritedEvents.length} events)
+        </button>
+        {showInherited && (
+          <ol className="relative ml-2 mt-3 border-l border-dashed border-border opacity-70">
+            {view.inheritedEvents.map((e) => {
+              const ms = data.batch_measurements.filter((m) => m.event_id === e.id)
+              return (
+                <li key={e.id} className="relative pb-3 pl-5 last:pb-0">
+                  <span className="absolute -left-[5px] top-1.5 size-2.5 rounded-full border-2 border-surface bg-text-3" />
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                    <div className="text-sm text-text-2">
+                      {e.type}
+                      {e.title && <span className="ml-2 font-mono text-xs text-text-3">{e.title}</span>}
+                    </div>
+                    <span className="font-mono text-[11px] text-text-3">{fmtDateTime(e.occurred_at)}</span>
+                  </div>
+                  {ms.length > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      {ms.map((m) => (
+                        <span key={m.id} className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-text-3">
+                          {m.type === 'sg' ? formatGravity(m.value) : m.type === 'temp' ? `${m.value}°${m.unit}` : `${m.type} ${m.value}`}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </li>
+              )
+            })}
+          </ol>
+        )}
+      </div>
+    )}
+    </>
   )
 }
 
@@ -763,6 +919,8 @@ function IngredientTable({
   onAdd,
   onEdit,
   showContact,
+  inherited = [],
+  parentCode,
 }: {
   view: ReturnType<typeof buildBatchView>
   title: string
@@ -771,8 +929,11 @@ function IngredientTable({
   onAdd: () => void
   onEdit: (i: BatchIngredient) => void
   showContact?: boolean
+  inherited?: BatchIngredient[]
+  parentCode?: string
 }) {
   const rows = view.ingredients.filter(filter).sort((a, b) => (a.added_at ?? '').localeCompare(b.added_at ?? ''))
+  const inheritedRows = inherited.sort((a, b) => (a.added_at ?? '').localeCompare(b.added_at ?? ''))
   return (
     <Card>
       <CardHeader>
@@ -785,7 +946,7 @@ function IngredientTable({
         </Button>
       </CardHeader>
       <CardBody className="pt-3">
-        {rows.length === 0 ? (
+        {rows.length === 0 && inheritedRows.length === 0 ? (
           <div className="text-xs text-text-3">Nothing recorded.</div>
         ) : (
           <Table>
@@ -801,6 +962,21 @@ function IngredientTable({
               </tr>
             </thead>
             <tbody>
+              {inheritedRows.map((i) => (
+                <TR key={i.id} className="opacity-60" title={`Inherited from ${parentCode}`}>
+                  <TD>
+                    <Badge>{i.category}</Badge>
+                  </TD>
+                  <TD className="text-text-2">
+                    {i.name} <span className="font-mono text-[10px] uppercase text-text-3">· {parentCode}</span>
+                  </TD>
+                  <TD className="text-right font-mono tabular">{formatAmount(i.amount, i.unit)}</TD>
+                  <TD>{i.addition_stage ?? '—'}</TD>
+                  <TD>{fmtDate(i.added_at)}</TD>
+                  {showContact && <TD>—</TD>}
+                  <TD className="max-w-[200px] truncate">{i.notes ?? ''}</TD>
+                </TR>
+              ))}
               {rows.map((i) => (
                 <TR key={i.id} className="cursor-pointer" onClick={() => onEdit(i)}>
                   <TD>

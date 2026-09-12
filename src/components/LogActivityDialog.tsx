@@ -13,6 +13,8 @@ import { buildBatchView, isActive } from '@/lib/derive'
 import { formatGravity, preferredTempUnit, preferredSmallVolumeUnit } from '@/lib/calc/units'
 import { fromLocalInput, num, str, toLocalInput } from '@/lib/utils'
 import { newId } from '@/lib/data'
+import { useShell } from '@/components/AppShell'
+import { Split } from 'lucide-react'
 
 /**
  * The 5–15 second logging flow. Pick a batch (pre-filled when opened from a batch page),
@@ -33,6 +35,7 @@ export function LogActivityDialog({
   const { data, prefs, insert, touchBatch } = useStore()
   const toast = useToast()
   const router = useRouter()
+  const { openSplit } = useShell()
 
   const activeBatches = React.useMemo(() => data.batches.filter(isActive).concat(data.batches.filter((b) => !isActive(b))), [data.batches])
 
@@ -155,6 +158,7 @@ export function LogActivityDialog({
           transferred_at: occurred_at,
           from_vessel_id: str(fromV),
           to_vessel_id: str(toV),
+          to_batch_id: null,
           volume_before: num(volBefore),
           volume_after: num(volAfter),
           volume_unit: volUnit as Transfer['volume_unit'],
@@ -166,8 +170,9 @@ export function LogActivityDialog({
         const fn = data.vessels.find((v) => v.id === fromV)?.name
         const tn = data.vessels.find((v) => v.id === toV)?.name
         if (fn || tn) parts.push(`${fn ?? '?'} → ${tn ?? '?'}`)
-        if (transfer.volume_before != null && transfer.volume_after != null)
-          parts.push(`${transfer.volume_before} → ${transfer.volume_after} ${volUnit}`)
+        const vb = num(volBefore)
+        const va = num(volAfter)
+        if (vb != null && va != null) parts.push(`${vb} → ${va} ${volUnit}`)
       }
 
       if (showAddition && str(addName)) {
@@ -323,6 +328,19 @@ export function LogActivityDialog({
           </Field>
         )}
 
+        {showTransfer && batch && !batch.parent_batch_id && batch.stage !== 'Split' && (
+          <button
+            type="button"
+            onClick={() => openSplit(batch.id)}
+            className="flex items-center justify-between rounded-xl border border-dashed border-border-2 px-3 py-2 text-left text-sm text-text-2 hover:border-accent hover:text-fg"
+          >
+            <span>
+              <Split size={14} className="mr-2 inline text-accent" />
+              Splitting into multiple vessels? <span className="text-text-3">Create sub-lots instead.</span>
+            </span>
+            <span className="text-xs text-accent">Split →</span>
+          </button>
+        )}
         {showTransfer && (
           <>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

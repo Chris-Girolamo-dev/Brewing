@@ -26,7 +26,7 @@ export default function PackagingPage() {
     <>
       <PageHeader eyebrow="Packaging" title="Bottles & kegs" subtitle="Package records across batches, reusable package profiles, and a standalone priming calculator." />
 
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
           <Card>
             <CardHeader>

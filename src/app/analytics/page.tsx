@@ -2,6 +2,8 @@
 
 import * as React from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import { Loading as LoadingFallback } from '@/components/PageHeader'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend } from 'recharts'
 import { differenceInHours } from 'date-fns'
 import { useStore } from '@/lib/store'
@@ -15,15 +17,19 @@ import { cn, fmtDate } from '@/lib/utils'
 
 const COLORS = ['var(--chart-cat-1)', 'var(--chart-cat-2)', 'var(--chart-cat-3)', 'var(--chart-cat-4)', 'var(--chart-cat-5)', 'var(--chart-cat-6)']
 
-export default function AnalyticsPage() {
+function AnalyticsInner() {
   const { data, prefs, ready } = useStore()
+  const params = useSearchParams()
+  const idsParam = params.get('ids')
   const [selected, setSelected] = React.useState<string[]>([])
   const views = React.useMemo(() => data.batches.map((b) => buildBatchView(data, b, prefs)), [data, prefs])
 
   React.useEffect(() => {
-    if (selected.length === 0 && views.length) setSelected(views.slice(0, Math.min(3, views.length)).map((v) => v.batch.id))
+    if (selected.length > 0 || !views.length) return
+    const fromParam = idsParam ? idsParam.split(',').filter((id) => views.some((v) => v.batch.id === id)) : []
+    setSelected(fromParam.length ? fromParam.slice(0, 6) : views.slice(0, Math.min(3, views.length)).map((v) => v.batch.id))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [views.length])
+  }, [views.length, idsParam])
 
   const chosen = React.useMemo(
     () => selected.map((id) => views.find((v) => v.batch.id === id)).filter((v): v is BatchView => !!v),
@@ -79,7 +85,7 @@ export default function AnalyticsPage() {
         })}
       </div>
 
-      <div className="mt-5 grid gap-5 lg:grid-cols-3">
+      <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
         <Card className="p-4 sm:p-5 lg:col-span-2">
           <FigCaption>FIG. 02 / GRAVITY OVERLAY · SG vs DAYS</FigCaption>
           <div className="mt-4 h-72">
@@ -185,5 +191,13 @@ function CmpRow({ label, cells, mono }: { label: string; cells: string[]; mono?:
         </TD>
       ))}
     </TR>
+  )
+}
+
+export default function AnalyticsPage() {
+  return (
+    <React.Suspense fallback={<LoadingFallback />}>
+      <AnalyticsInner />
+    </React.Suspense>
   )
 }

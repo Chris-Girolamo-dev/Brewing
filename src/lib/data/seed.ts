@@ -12,10 +12,8 @@ import type {
   Measurement,
   NutrientAddition,
   PackageProfile,
-  Packaging,
   Reminder,
   Snapshot,
-  Stabilization,
   Transfer,
   Vessel,
   Yeast,
@@ -33,6 +31,9 @@ const V = {
   carboy5: id(4),
   carboy65: id(5),
   bucket65: id(6),
+  jug1: id(7),
+  jug2: id(8),
+  jug3: id(9),
 }
 const B = { mead: id(100), bcider: id(101), acider: id(102) }
 const P = { bomber: id(200), wine750: id(201), swing16: id(202) }
@@ -47,6 +48,9 @@ export function buildSeed(): Snapshot {
     vessel(V.carboy5, '5-Gallon Carboy #1', 'Carboy', 5, 'gal', 'Glass'),
     vessel(V.carboy65, '6.5-Gallon Carboy #1', 'Carboy', 6.5, 'gal', 'Glass'),
     vessel(V.bucket65, '6.5-Gallon Bucket #1', 'Bucket', 6.5, 'gal', 'HDPE'),
+    vessel(V.jug1, '1.5-Gallon Jug #1', 'Jar', 1.5, 'gal', 'Glass'),
+    vessel(V.jug2, '1.5-Gallon Jug #2', 'Jar', 1.5, 'gal', 'Glass'),
+    vessel(V.jug3, '1.5-Gallon Jug #3', 'Jar', 1.5, 'gal', 'Glass'),
   ]
 
   s.package_profiles = [
@@ -163,83 +167,50 @@ export function buildSeed(): Snapshot {
   s.reminders.push(rem(id(810), B.bcider, 'Check clarity; rack off bentonite', d('2026-09-14')))
 
   // ---------------------------------------------------------------- CIDER-2026-002
-  const acPitch = d('2026-08-01')
+  // Reality as of 2026-09-12: still in primary in the 5-gal carboy. Plan: rack and split into
+  // 3 × 1.5 gal sub-lots (1.5 g ginger / 2.5 g ginger / control).
+  const acPitch = d('2026-08-30')
   s.batches.push(
     batch({
       id: B.acider,
       batch_code: 'CIDER-2026-002',
       name: '5-Gallon Apple Cider',
       beverage_type: 'Cider',
-      style: 'Dry sparkling cider',
-      batch_date: '2026-08-01',
+      style: 'Dry cider',
+      batch_date: '2026-08-30',
       pitch_date: acPitch,
       target_volume: 5,
       volume_unit: 'gal',
-      goal: 'Sparkling',
-      stage: 'Bottle Conditioning',
+      goal: 'Dry',
+      stage: 'Primary Fermentation',
       og: 1.05,
-      fg: 1.0,
-      fg_confirmed_at: d('2026-08-22'),
-      fermentation_complete_at: d('2026-08-22'),
-      current_vessel_id: null,
-      notes: 'PLACEHOLDER — OG/FG estimated. Replace with paper notes.',
+      current_vessel_id: V.carboy5,
+      notes: 'PLACEHOLDER gravity readings — replace with paper notes. Plan: rack and split into 3 × 1.5 gal (1.5 g ginger / 2.5 g ginger / control).',
     })
   )
   s.batch_ingredients.push(
     ing(id(320), B.acider, 'Juice', 'Apple juice', 5, 'gal', { addition_stage: 'Primary', added_at: acPitch }),
-    ing(id(321), B.acider, 'Nutrient', 'Fermaid-O', 5, 'g', { addition_stage: 'Primary', added_at: acPitch }),
-    ing(id(322), B.acider, 'Sugar', 'Table sugar (priming)', 118, 'g', { addition_stage: 'Packaging', added_at: d('2026-09-02') })
+    ing(id(321), B.acider, 'Nutrient', 'Fermaid-O', 5, 'g', { addition_stage: 'Primary', added_at: acPitch })
   )
   s.yeasts.push(yeast(id(420), B.acider, 'Lalvin', 'K1-V1116', 5, 'g', acPitch, { rehydrated: true, rehydration_medium: 'Water' }))
   addReadings(
     s,
     B.acider,
     [
-      ['2026-08-01', 1.05, 66],
-      ['2026-08-05', 1.03, 68],
-      ['2026-08-10', 1.01, 67],
-      ['2026-08-15', 1.002, 66],
-      ['2026-08-22', 1.0, 66],
-      ['2026-09-02', 1.0, 66],
+      ['2026-08-30', 1.05, 66],
+      ['2026-09-03', 1.032, 68],
+      ['2026-09-07', 1.016, 67],
+      ['2026-09-10', 1.008, 66],
     ],
     620,
     'Primary Fermentation',
-    V.carboy65
+    V.carboy5
   )
-  s.batch_transfers.push(
-    xfer(id(910), B.acider, d('2026-08-23'), V.carboy65, V.carboy5, 5, 4.8, 'gal', 'Auto-siphon', 'Off lees for clearing', null)
-  )
-  s.packaging_events.push({
-    id: id(1000),
-    batch_id: B.acider,
-    event_id: null,
-    packaged_at: d('2026-09-02'),
-    pre_sg: 1.0,
-    packaged_volume: 4.6,
-    volume_unit: 'gal',
-    package_type: 'Crown-cap beer bottle',
-    container_size: 22,
-    size_unit: 'oz',
-    quantity: 26,
-    closure: '26 mm crown cap',
-    priming_sugar_type: 'sucrose',
-    priming_sugar_grams: 118,
-    target_co2: 2.6,
-    conditioning_temp: 68,
-    temp_unit: 'F',
-    conditioning_start: d('2026-09-02'),
-    expected_ready_at: d('2026-09-16'),
-    notes: 'PLACEHOLDER count',
-    created_at: T,
-  })
   s.batch_events.push(
     ev(id(720), B.acider, acPitch, 'Batch Created', 'Planning'),
-    ev(id(721), B.acider, acPitch, 'Yeast Pitched', 'Primary Fermentation', 'Lalvin K1-V1116'),
-    ev(id(722), B.acider, d('2026-08-22'), 'Fermentation Complete', 'Primary Fermentation', 'FG 1.000 confirmed'),
-    ev(id(723), B.acider, d('2026-08-23'), 'Racked', 'Secondary / Clearing', '6.5 gal carboy → 5 gal carboy'),
-    ev(id(724), B.acider, d('2026-09-02'), 'Bottled', 'Bottle Conditioning', '26 × 22 oz bombers, 118 g table sugar, target 2.6 vol')
+    ev(id(721), B.acider, acPitch, 'Yeast Pitched', 'Primary Fermentation', 'Lalvin K1-V1116')
   )
-  s.reminders.push(rem(id(820), B.acider, 'Check bottle carbonation', d('2026-09-16')))
+  s.reminders.push(rem(id(821), B.acider, 'Rack and split into 3 × 1.5 gal: 1.5 g ginger / 2.5 g ginger / control', d('2026-09-19')))
 
   return s
 }
@@ -276,6 +247,9 @@ function batch(b: Partial<Batch> & Pick<Batch, 'id' | 'batch_code' | 'name' | 'b
     fermentation_complete_at: null,
     current_vessel_id: null,
     notes: null,
+    parent_batch_id: null,
+    lot_label: null,
+    split_at: null,
     created_at: T,
     updated_at: T,
     ...b,
@@ -398,6 +372,7 @@ function xfer(
     transferred_at,
     from_vessel_id: from,
     to_vessel_id: to,
+    to_batch_id: null,
     volume_before: before,
     volume_after: after,
     volume_unit: unit,
@@ -451,6 +426,3 @@ function addReadings(
     }
   })
 }
-
-// Unused-import guard for types only referenced in builders.
-export type { Stabilization, Packaging }

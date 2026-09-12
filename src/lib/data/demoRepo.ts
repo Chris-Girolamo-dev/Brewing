@@ -2,7 +2,7 @@ import { emptySnapshot, type Row, type Snapshot, type TableName } from '@/lib/ty
 import type { Repository } from './repository'
 import { buildSeed } from './seed'
 
-const KEY = 'fbm_demo_snapshot_v1'
+const KEY = 'fbm_demo_snapshot_v2'
 
 /**
  * Browser-local adapter used when Supabase env vars are absent. Persists the whole

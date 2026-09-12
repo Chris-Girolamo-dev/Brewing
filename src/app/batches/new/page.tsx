@@ -109,6 +109,9 @@ function NewBatchForm() {
         fermentation_complete_at: null,
         current_vessel_id: vesselId || null,
         notes: str(notes),
+        parent_batch_id: null,
+        lot_label: null,
+        split_at: null,
         updated_at: new Date().toISOString(),
       })
       const created = new Date(`${date}T12:00:00`).toISOString()

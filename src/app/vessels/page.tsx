@@ -34,7 +34,7 @@ export default function VesselsPage() {
           </Button>
         }
       />
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {vessels.map((v) => {
           const batch = data.batches.find((b) => b.current_vessel_id === v.id && isActive(b))
           return (

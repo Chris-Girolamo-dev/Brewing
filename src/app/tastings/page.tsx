@@ -39,7 +39,7 @@ export default function TastingsPage() {
       {tastings.length === 0 ? (
         <EmptyState title="No tastings yet" hint="Use the Taste quick action on a batch page." />
       ) : (
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {tastings.map((t) => {
             const b = data.batches.find((x) => x.id === t.batch_id)
             const pkg = data.packaging_events.filter((p) => p.batch_id === t.batch_id).sort((a, c) => a.packaged_at.localeCompare(c.packaged_at))[0]

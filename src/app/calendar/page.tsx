@@ -49,7 +49,7 @@ export default function CalendarPage() {
         }
       />
 
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         <Card className="overflow-hidden lg:col-span-2">
           <div className="grid grid-cols-7 border-b border-border bg-surface-2 font-mono text-[10px] uppercase tracking-wider text-text-3">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (

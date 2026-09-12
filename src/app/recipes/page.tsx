@@ -33,7 +33,7 @@ export default function RecipesPage() {
           }
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {recipes.map((r) => {
             const src = data.batches.find((b) => b.id === r.source_batch_id)
             const uses = data.batches.filter((b) => b.recipe_id === r.id).length

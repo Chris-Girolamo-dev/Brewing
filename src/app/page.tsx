@@ -75,7 +75,7 @@ export default function DashboardPage() {
         <MetricCard label="Conditioning / aging" value={conditioning.length + aging.length} />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-fg">Active batches</h2>
@@ -96,7 +96,7 @@ export default function DashboardPage() {
               }
             />
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {views.map((v) => (
                 <BatchCard key={v.batch.id} view={v} />
               ))}

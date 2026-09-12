@@ -22,6 +22,12 @@ export function BatchCard({ view }: { view: BatchView }) {
             <div className="font-mono text-[11px] uppercase tracking-wider text-text-3">
               {b.batch_code} · {b.beverage_type}
             </div>
+            {view.parent && (
+              <div className="mt-0.5 text-[11px] text-text-3">
+                ↳ sub-lot of <span className="text-text-2">{view.parent.batch_code}</span>
+              </div>
+            )}
+            {view.isSplitParent && <div className="mt-0.5 text-[11px] text-text-3">{view.children.length} sub-lots</div>}
           </div>
           <StatusPill tone={stageTone(b.stage)}>{b.stage}</StatusPill>
         </div>
