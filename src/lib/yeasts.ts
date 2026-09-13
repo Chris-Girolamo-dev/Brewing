@@ -40,3 +40,10 @@ export function findPreset(manufacturer: string | null, strain: string): YeastPr
   const s = strain.trim().toLowerCase()
   return COMMON_YEASTS.find((p) => p.strain.toLowerCase() === s || s.startsWith(p.strain.toLowerCase()))
 }
+
+/** Timeline summary for a pitch: "Lalvin K1-V1116 · 5 g". */
+export function yeastLabel(y: { manufacturer: string | null; strain: string; amount?: number | null; unit?: string | null }, extra?: string): string {
+  const name = `${y.manufacturer ?? ''} ${y.strain}`.trim()
+  const amt = y.amount != null ? ` · ${y.amount} ${y.unit ?? 'g'}` : ''
+  return `${name}${amt}${extra ? ` · ${extra}` : ''}`
+}

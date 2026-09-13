@@ -39,6 +39,7 @@ import { convertTemp, formatGravity, preferredTempUnit, preferredVolumeUnit, toF
 import { fromLocalInput, num, str, todayInput, toLocalInput } from '@/lib/utils'
 import { addDays } from 'date-fns'
 import { YeastStrainPicker } from '@/components/YeastStrainPicker'
+import { yeastLabel } from '@/lib/yeasts'
 
 // ---------------------------------------------------------------- Edit batch
 
@@ -384,11 +385,11 @@ export function YeastDialog({ batchId, existing, open, onClose }: { batchId: str
     if (existing) {
       await update('yeasts', existing.id, row)
       // Keep the timeline in step: rename any "Yeast Pitched" event that named the old strain.
-      const oldLabel = `${existing.manufacturer ?? ''} ${existing.strain}`.trim()
-      const newLabel = `${row.manufacturer ?? ''} ${row.strain}`.trim()
+      const oldName = `${existing.manufacturer ?? ''} ${existing.strain}`.trim()
+      const newName = `${row.manufacturer ?? ''} ${row.strain}`.trim()
+      const title = yeastLabel(row, row.rehydrated ? 'rehydrated' : undefined)
       for (const e of data.batch_events.filter((e) => e.batch_id === batchId && e.type === 'Yeast Pitched')) {
-        const title = e.title?.includes(oldLabel) ? e.title.replace(oldLabel, newLabel) : (e.title ?? newLabel)
-        const notes = e.notes?.includes(oldLabel) ? e.notes.replace(oldLabel, newLabel) : e.notes
+        const notes = e.notes?.includes(oldName) ? e.notes.replace(oldName, newName) : e.notes
         if (title !== e.title || notes !== e.notes) await update('batch_events', e.id, { title, notes })
       }
       await touchBatch(batchId)
@@ -406,7 +407,7 @@ export function YeastDialog({ batchId, existing, open, onClose }: { batchId: str
           type: 'Yeast Pitched',
           stage: 'Primary Fermentation',
           vessel_id: batch?.current_vessel_id ?? null,
-          title: `${row.manufacturer ?? ''} ${row.strain}${row.rehydrated ? ' · rehydrated' : ''}`.trim(),
+          title: yeastLabel(row, row.rehydrated ? 'rehydrated' : undefined),
           notes: row.notes,
         })
     }

@@ -46,7 +46,7 @@ insert into batch_events (id, batch_id, occurred_at, type, stage, vessel_id, tit
   ('00000000-0000-4000-8000-000000006003', '00000000-0000-4000-8000-000000000100', '2026-09-08T17:00:00.000Z', 'Gravity Reading', 'Primary Fermentation', null, 'SG 1.036 · 69°F', null, '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000006004', '00000000-0000-4000-8000-000000000100', '2026-09-10T17:00:00.000Z', 'Gravity Reading', 'Primary Fermentation', null, 'SG 1.022 · 68°F', null, '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000000700', '00000000-0000-4000-8000-000000000100', '2026-08-30T17:00:00.000Z', 'Batch Created', 'Planning', null, null, null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000000701', '00000000-0000-4000-8000-000000000100', '2026-08-30T17:00:00.000Z', 'Yeast Pitched', 'Primary Fermentation', null, null, 'Lalvin 71B, rehydrated in Go-Ferm', '2026-09-11T12:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000000701', '00000000-0000-4000-8000-000000000100', '2026-08-30T17:00:00.000Z', 'Yeast Pitched', 'Primary Fermentation', null, 'Lalvin 71B · 5 g', 'Rehydrated in Go-Ferm', '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000000702', '00000000-0000-4000-8000-000000000100', '2026-08-31T17:00:00.000Z', 'Nutrient Addition', 'Primary Fermentation', null, null, 'Fermaid-O 2.0 g (24 hr)', '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000000703', '00000000-0000-4000-8000-000000000100', '2026-09-01T17:00:00.000Z', 'Nutrient Addition', 'Primary Fermentation', null, null, 'Fermaid-O 1.5 g (48 hr)', '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000000704', '00000000-0000-4000-8000-000000000100', '2026-09-01T17:00:00.000Z', 'Blow-off Installed', 'Primary Fermentation', null, null, 'Vigorous fermentation; fruit cap pushing into airlock', '2026-09-11T12:00:00.000Z'),
@@ -58,7 +58,7 @@ insert into batch_events (id, batch_id, occurred_at, type, stage, vessel_id, tit
   ('00000000-0000-4000-8000-000000006103', '00000000-0000-4000-8000-000000000101', '2026-08-29T17:00:00.000Z', 'Gravity Reading', 'Primary Fermentation', null, 'SG 0.997 · 68°F', null, '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000006104', '00000000-0000-4000-8000-000000000101', '2026-09-05T17:00:00.000Z', 'Gravity Reading', 'Primary Fermentation', null, 'SG 0.997 · 67°F', null, '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000000710', '00000000-0000-4000-8000-000000000101', '2026-08-20T17:00:00.000Z', 'Batch Created', 'Planning', null, null, null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000000711', '00000000-0000-4000-8000-000000000101', '2026-08-20T17:00:00.000Z', 'Yeast Pitched', 'Primary Fermentation', null, null, 'Lalvin 71B', '2026-09-11T12:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000000711', '00000000-0000-4000-8000-000000000101', '2026-08-20T17:00:00.000Z', 'Yeast Pitched', 'Primary Fermentation', null, 'Lalvin 71B · 5 g', null, '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000000712', '00000000-0000-4000-8000-000000000101', '2026-08-24T17:00:00.000Z', 'Punch Down', 'Primary Fermentation', null, null, null, '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000000713', '00000000-0000-4000-8000-000000000101', '2026-08-29T17:00:00.000Z', 'Fermentation Complete', 'Primary Fermentation', null, null, 'FG 0.997 confirmed', '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000000714', '00000000-0000-4000-8000-000000000101', '2026-09-06T17:00:00.000Z', 'Racked', 'Secondary / Clearing', null, null, 'Racked to a clean 1-gal jar, 128 → 125 oz', '2026-09-11T12:00:00.000Z'),
@@ -68,7 +68,7 @@ insert into batch_events (id, batch_id, occurred_at, type, stage, vessel_id, tit
   ('00000000-0000-4000-8000-000000006202', '00000000-0000-4000-8000-000000000102', '2026-09-07T17:00:00.000Z', 'Gravity Reading', 'Primary Fermentation', null, 'SG 1.016 · 67°F', null, '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000006203', '00000000-0000-4000-8000-000000000102', '2026-09-10T17:00:00.000Z', 'Gravity Reading', 'Primary Fermentation', null, 'SG 1.008 · 66°F', null, '2026-09-11T12:00:00.000Z'),
   ('00000000-0000-4000-8000-000000000720', '00000000-0000-4000-8000-000000000102', '2026-08-30T17:00:00.000Z', 'Batch Created', 'Planning', null, null, null, '2026-09-11T12:00:00.000Z'),
-  ('00000000-0000-4000-8000-000000000721', '00000000-0000-4000-8000-000000000102', '2026-08-30T17:00:00.000Z', 'Yeast Pitched', 'Primary Fermentation', null, null, 'Lalvin K1-V1116', '2026-09-11T12:00:00.000Z')
+  ('00000000-0000-4000-8000-000000000721', '00000000-0000-4000-8000-000000000102', '2026-08-30T17:00:00.000Z', 'Yeast Pitched', 'Primary Fermentation', null, 'Lalvin K1-V1116 · 5 g', 'Rehydrated in water', '2026-09-11T12:00:00.000Z')
 on conflict (id) do nothing;
 
 insert into batch_measurements (id, batch_id, event_id, measured_at, type, value, unit, stage, vessel_id, notes, created_at) values

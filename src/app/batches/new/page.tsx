@@ -28,6 +28,7 @@ import {
 import { preferredVolumeUnit } from '@/lib/calc/units'
 import { fromLocalInput, num, str, todayInput, toLocalInput } from '@/lib/utils'
 import { YeastStrainPicker } from '@/components/YeastStrainPicker'
+import { yeastLabel } from '@/lib/yeasts'
 
 type Step = 1 | 2 | 3 | 4
 
@@ -155,7 +156,7 @@ function NewBatchForm() {
           notes: str(y.notes),
         })
         if (pitch)
-          await logEvent({ batch_id: id, occurred_at: pitch, type: 'Yeast Pitched', stage: 'Primary Fermentation', vessel_id: vesselId || null, title: `${y.manufacturer ?? ''} ${y.strain}`.trim(), notes: null })
+          await logEvent({ batch_id: id, occurred_at: pitch, type: 'Yeast Pitched', stage: 'Primary Fermentation', vessel_id: vesselId || null, title: yeastLabel(y), notes: null })
       }
       const ogN = num(og)
       if (ogN != null) {

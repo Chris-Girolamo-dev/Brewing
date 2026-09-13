@@ -94,7 +94,7 @@ export function buildSeed(): Snapshot {
   addReadings(s, B.mead, meadReadings, 600, 'Primary Fermentation', V.jar)
   s.batch_events.push(
     ev(id(700), B.mead, meadPitch, 'Batch Created', 'Planning'),
-    ev(id(701), B.mead, meadPitch, 'Yeast Pitched', 'Primary Fermentation', 'Lalvin 71B, rehydrated in Go-Ferm'),
+    { ...ev(id(701), B.mead, meadPitch, 'Yeast Pitched', 'Primary Fermentation', 'Rehydrated in Go-Ferm'), title: 'Lalvin 71B · 5 g' },
     ev(id(702), B.mead, d('2026-08-31'), 'Nutrient Addition', 'Primary Fermentation', 'Fermaid-O 2.0 g (24 hr)'),
     ev(id(703), B.mead, d('2026-09-01'), 'Nutrient Addition', 'Primary Fermentation', 'Fermaid-O 1.5 g (48 hr)'),
     ev(id(704), B.mead, d('2026-09-01'), 'Blow-off Installed', 'Primary Fermentation', 'Vigorous fermentation; fruit cap pushing into airlock'),
@@ -151,7 +151,7 @@ export function buildSeed(): Snapshot {
   )
   s.batch_events.push(
     ev(id(710), B.bcider, bcPitch, 'Batch Created', 'Planning'),
-    ev(id(711), B.bcider, bcPitch, 'Yeast Pitched', 'Primary Fermentation', 'Lalvin 71B'),
+    { ...ev(id(711), B.bcider, bcPitch, 'Yeast Pitched', 'Primary Fermentation'), title: 'Lalvin 71B · 5 g' },
     ev(id(712), B.bcider, d('2026-08-24'), 'Punch Down', 'Primary Fermentation'),
     ev(id(713), B.bcider, d('2026-08-29'), 'Fermentation Complete', 'Primary Fermentation', 'FG 0.997 confirmed'),
     ev(id(714), B.bcider, d('2026-09-06'), 'Racked', 'Secondary / Clearing', 'Racked to a clean 1-gal jar, 128 → 125 oz'),
@@ -201,7 +201,7 @@ export function buildSeed(): Snapshot {
   )
   s.batch_events.push(
     ev(id(720), B.acider, acPitch, 'Batch Created', 'Planning'),
-    ev(id(721), B.acider, acPitch, 'Yeast Pitched', 'Primary Fermentation', 'Lalvin K1-V1116')
+    { ...ev(id(721), B.acider, acPitch, 'Yeast Pitched', 'Primary Fermentation', 'Rehydrated in water'), title: 'Lalvin K1-V1116 · 5 g' }
   )
   s.reminders.push(rem(id(821), B.acider, 'Rack and split into 3 × 1.5 gal: 1.5 g ginger / 2.5 g ginger / control', d('2026-09-19')))
 
