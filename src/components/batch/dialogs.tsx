@@ -12,6 +12,7 @@ import { newId } from '@/lib/data'
 import type { BatchView } from '@/lib/derive'
 import { bumpVersionName, nextBatchCode } from '@/lib/derive'
 import {
+  ACTIVITY_TYPES,
   ADDITION_STAGES,
   BATCH_STAGES,
   BEVERAGE_TYPES,
@@ -22,6 +23,7 @@ import {
   SUGAR_TYPES,
   VOLUME_UNITS,
   type Batch,
+  type BatchEvent,
   type BatchIngredient,
   type Measurement,
   type Packaging,
@@ -36,6 +38,7 @@ import { bottlesFromVolume, gramsToOunces, primingSugarGrams, residualCo2 } from
 import { convertTemp, formatGravity, preferredTempUnit, preferredVolumeUnit, toFluidOunces } from '@/lib/calc/units'
 import { fromLocalInput, num, str, todayInput, toLocalInput } from '@/lib/utils'
 import { addDays } from 'date-fns'
+import { YeastStrainPicker } from '@/components/YeastStrainPicker'
 
 // ---------------------------------------------------------------- Edit batch
 
@@ -378,8 +381,18 @@ export function YeastDialog({ batchId, existing, open, onClose }: { batchId: str
   async function save() {
     if (!f.strain.trim()) return
     const row = { ...f, strain: f.strain.trim(), manufacturer: str(f.manufacturer), rehydration_medium: str(f.rehydration_medium), lot: str(f.lot), expiration: str(f.expiration), notes: str(f.notes) }
-    if (existing) await update('yeasts', existing.id, row)
-    else {
+    if (existing) {
+      await update('yeasts', existing.id, row)
+      // Keep the timeline in step: rename any "Yeast Pitched" event that named the old strain.
+      const oldLabel = `${existing.manufacturer ?? ''} ${existing.strain}`.trim()
+      const newLabel = `${row.manufacturer ?? ''} ${row.strain}`.trim()
+      for (const e of data.batch_events.filter((e) => e.batch_id === batchId && e.type === 'Yeast Pitched')) {
+        const title = e.title?.includes(oldLabel) ? e.title.replace(oldLabel, newLabel) : (e.title ?? newLabel)
+        const notes = e.notes?.includes(oldLabel) ? e.notes.replace(oldLabel, newLabel) : e.notes
+        if (title !== e.title || notes !== e.notes) await update('batch_events', e.id, { title, notes })
+      }
+      await touchBatch(batchId)
+    } else {
       await insert('yeasts', row)
       const batch = data.batches.find((b) => b.id === batchId)
       const patch: Partial<Batch> = {}
@@ -423,14 +436,14 @@ export function YeastDialog({ batchId, existing, open, onClose }: { batchId: str
       }
     >
       <div className="grid gap-3">
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Manufacturer">
-            <Input value={f.manufacturer ?? ''} onChange={(e) => set('manufacturer', e.target.value)} placeholder="Lalvin" />
-          </Field>
-          <Field label="Strain">
-            <Input autoFocus value={f.strain} onChange={(e) => set('strain', e.target.value)} placeholder="71B" />
-          </Field>
-        </div>
+        <Field label="Yeast">
+          <YeastStrainPicker
+            autoFocus
+            manufacturer={f.manufacturer}
+            strain={f.strain}
+            onChange={(v) => setF((x) => ({ ...x, manufacturer: v.manufacturer, strain: v.strain }))}
+          />
+        </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Amount">
             <UnitInput value={f.amount?.toString() ?? ''} onChange={(v) => set('amount', num(v))} unit={f.unit ?? 'g'} units={['g', 'packet']} onUnitChange={(u) => set('unit', u as Yeast['unit'])} />
@@ -1291,7 +1304,7 @@ export function DuplicateDialog({ view, open, onClose, mode }: { view: BatchView
 // ---------------------------------------------------------------- Measurement (edit / delete)
 
 export function MeasurementDialog({ measurement, open, onClose }: { measurement: Measurement | null; open: boolean; onClose: () => void }) {
-  const { update, remove, touchBatch } = useStore()
+  const { data, update, remove, touchBatch } = useStore()
   const toast = useToast()
   const [value, setValue] = React.useState('')
   const [when, setWhen] = React.useState(toLocalInput(null))
@@ -1317,6 +1330,12 @@ export function MeasurementDialog({ measurement, open, onClose }: { measurement:
   async function del() {
     if (!measurement) return
     await remove('batch_measurements', measurement.id)
+    // A reading event with nothing left attached is just noise on the timeline.
+    if (measurement.event_id) {
+      const ev = data.batch_events.find((e) => e.id === measurement.event_id)
+      const others = data.batch_measurements.filter((m) => m.event_id === measurement.event_id && m.id !== measurement.id)
+      if (ev && others.length === 0 && ['Gravity Reading', 'pH Reading', 'Temperature Reading'].includes(ev.type)) await remove('batch_events', ev.id)
+    }
     await touchBatch(measurement.batch_id)
     toast({ tone: 'ok', title: 'Reading deleted' })
     onClose()
@@ -1352,6 +1371,135 @@ export function MeasurementDialog({ measurement, open, onClose }: { measurement:
         </div>
         <Field label="Notes">
           <Input value={notes} onChange={(e) => setNotes(e.target.value)} />
+        </Field>
+      </div>
+    </Dialog>
+  )
+}
+
+// ---------------------------------------------------------------- Event (edit / delete any timeline entry)
+
+export function EventDialog({
+  event,
+  open,
+  onClose,
+  onEditYeast,
+}: {
+  event: BatchEvent | null
+  open: boolean
+  onClose: () => void
+  onEditYeast?: (yeast: Yeast) => void
+}) {
+  const { data, update, remove, touchBatch } = useStore()
+  const toast = useToast()
+  const [type, setType] = React.useState<BatchEvent['type']>('Other')
+  const [when, setWhen] = React.useState(toLocalInput(null))
+  const [title, setTitle] = React.useState('')
+  const [notes, setNotes] = React.useState('')
+  const [values, setValues] = React.useState<Record<string, string>>({})
+  const linked = React.useMemo(() => (event ? data.batch_measurements.filter((m) => m.event_id === event.id) : []), [data.batch_measurements, event])
+  const yeast = React.useMemo(() => {
+    if (!event || event.type !== 'Yeast Pitched') return null
+    const ys = data.yeasts.filter((y) => y.batch_id === event.batch_id)
+    return ys.sort((a, b) => Math.abs(new Date(a.pitched_at ?? 0).getTime() - new Date(event.occurred_at).getTime()) - Math.abs(new Date(b.pitched_at ?? 0).getTime() - new Date(event.occurred_at).getTime()))[0] ?? null
+  }, [data.yeasts, event])
+
+  React.useEffect(() => {
+    if (!open || !event) return
+    setType(event.type)
+    setWhen(toLocalInput(event.occurred_at))
+    setTitle(event.title ?? '')
+    setNotes(event.notes ?? '')
+    setValues(Object.fromEntries(linked.map((m) => [m.id, String(m.value)])))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, event])
+  if (!event) return null
+
+  async function save() {
+    if (!event) return
+    const at = fromLocalInput(when)
+    await update('batch_events', event.id, { type, occurred_at: at, title: str(title), notes: str(notes) })
+    for (const m of linked) {
+      const v = num(values[m.id])
+      const patch: Partial<Measurement> = { measured_at: at }
+      if (v != null && v !== m.value) patch.value = v
+      await update('batch_measurements', m.id, patch)
+    }
+    await touchBatch(event.batch_id)
+    toast({ tone: 'ok', title: 'Activity updated' })
+    onClose()
+  }
+  async function del() {
+    if (!event) return
+    for (const m of linked) await remove('batch_measurements', m.id)
+    await remove('batch_events', event.id)
+    await touchBatch(event.batch_id)
+    toast({ tone: 'ok', title: 'Activity deleted', message: linked.length ? `${linked.length} linked reading${linked.length > 1 ? 's' : ''} removed too` : undefined })
+    onClose()
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title="Edit activity"
+      subtitle={data.batches.find((b) => b.id === event.batch_id)?.name}
+      footer={
+        <>
+          <Button variant="danger" className="mr-auto" onClick={del}>
+            Delete
+          </Button>
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={save}>Save</Button>
+        </>
+      }
+    >
+      <div className="grid gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label="Activity">
+            <Select value={type} onChange={(e) => setType(e.target.value as BatchEvent['type'])}>
+              {ACTIVITY_TYPES.map((t) => (
+                <option key={t}>{t}</option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="When">
+            <Input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} />
+          </Field>
+        </div>
+        {yeast && onEditYeast && (
+          <button
+            type="button"
+            onClick={() => onEditYeast(yeast)}
+            className="flex items-center justify-between rounded-xl border border-dashed border-border-2 px-3 py-2 text-left text-sm text-text-2 hover:border-accent hover:text-fg"
+          >
+            <span>
+              Yeast record: <span className="text-fg">{`${yeast.manufacturer ?? ''} ${yeast.strain}`.trim()}</span>
+            </span>
+            <span className="text-xs text-accent">Edit strain →</span>
+          </button>
+        )}
+        {linked.length > 0 && (
+          <div className="grid grid-cols-2 gap-3">
+            {linked.map((m) => (
+              <Field key={m.id} label={m.type === 'sg' ? 'Specific gravity' : m.type === 'temp' ? 'Temperature' : m.type === 'ph' ? 'pH' : m.type}>
+                <UnitInput
+                  value={values[m.id] ?? ''}
+                  onChange={(v) => setValues((x) => ({ ...x, [m.id]: v }))}
+                  unit={m.type === 'sg' ? 'SG' : m.type === 'temp' ? `°${m.unit}` : m.unit}
+                  step={m.type === 'sg' ? 0.001 : m.type === 'ph' ? 0.01 : 'any'}
+                />
+              </Field>
+            ))}
+          </div>
+        )}
+        <Field label="Summary" hint="Short text shown next to the activity type">
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+        </Field>
+        <Field label="Notes">
+          <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
         </Field>
       </div>
     </Dialog>

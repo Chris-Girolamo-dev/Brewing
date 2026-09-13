@@ -388,7 +388,7 @@ function addReadings(
   rows.forEach(([day, sgv, temp], i) => {
     const at = d(day)
     const evId = id(base * 10 + i)
-    s.batch_events.push(ev(evId, batch_id, at, 'Gravity Reading', stage, `SG ${sgv.toFixed(3)}${temp != null ? ` · ${temp}°F` : ''}`))
+    s.batch_events.push({ ...ev(evId, batch_id, at, 'Gravity Reading', stage), title: `SG ${sgv.toFixed(3)}${temp != null ? ` · ${temp}°F` : ''}` })
     s.batch_measurements.push({
       id: id(base * 10 + i + 5000),
       batch_id,

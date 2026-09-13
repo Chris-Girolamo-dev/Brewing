@@ -27,6 +27,7 @@ import {
 } from '@/lib/types'
 import { preferredVolumeUnit } from '@/lib/calc/units'
 import { fromLocalInput, num, str, todayInput, toLocalInput } from '@/lib/utils'
+import { YeastStrainPicker } from '@/components/YeastStrainPicker'
 
 type Step = 1 | 2 | 3 | 4
 
@@ -303,9 +304,8 @@ function NewBatchForm() {
           {step === 3 && (
             <div className="grid gap-4">
               {yeasts.map((y, idx) => (
-                <div key={idx} className="grid grid-cols-2 gap-2 rounded-xl border border-border bg-canvas p-3 sm:grid-cols-[1fr_1fr_160px_auto]">
-                  <Input value={y.manufacturer ?? ''} onChange={(e) => patchYeast(idx, { manufacturer: e.target.value })} placeholder="Lalvin" />
-                  <Input value={y.strain} onChange={(e) => patchYeast(idx, { strain: e.target.value })} placeholder="71B" />
+                <div key={idx} className="grid grid-cols-1 gap-2 rounded-xl border border-border bg-canvas p-3 sm:grid-cols-[2fr_160px_auto] sm:items-start">
+                  <YeastStrainPicker manufacturer={y.manufacturer} strain={y.strain} onChange={(v) => patchYeast(idx, v)} />
                   <UnitInput value={y.amount?.toString() ?? ''} onChange={(v) => patchYeast(idx, { amount: num(v) })} unit={y.unit ?? 'g'} units={['g', 'packet']} onUnitChange={(u) => patchYeast(idx, { unit: u as RecipeYeast['unit'] })} />
                   <button className="justify-self-end text-text-3 hover:text-crit" onClick={() => setYeasts((xs) => xs.filter((_, j) => j !== idx))} aria-label="Remove">
                     <Trash2 size={16} />
