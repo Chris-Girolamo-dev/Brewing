@@ -144,7 +144,7 @@ function PrimingCalculator() {
       <CardHeader>
         <CardTitle>Priming calculator</CardTitle>
       </CardHeader>
-      <CardBody className="grid gap-3 pt-3">
+      <CardBody className="grid grid-cols-1 gap-3 pt-3">
         <Field label="Packaged volume">
           <UnitInput value={vol} onChange={setVol} unit={unit} units={VOLUME_UNITS} onUnitChange={(u) => setUnit(u as VolumeUnit)} />
         </Field>
@@ -224,7 +224,7 @@ function ProfileDialog({ open, onClose, onSave }: { open: boolean; onClose: () =
         </>
       }
     >
-      <div className="grid gap-3">
+      <div className="grid grid-cols-1 gap-3">
         <Field label="Name">
           <Input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="22 oz amber bomber" />
         </Field>

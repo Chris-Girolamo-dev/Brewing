@@ -194,7 +194,7 @@ function NewBatchForm() {
       <Card>
         <CardBody>
           {step === 1 && (
-            <div className="grid gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Field label="Batch name">
                   <Input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Blueberry Mead" />
@@ -265,7 +265,7 @@ function NewBatchForm() {
           )}
 
           {step === 2 && (
-            <div className="grid gap-3">
+            <div className="grid grid-cols-1 gap-3">
               <div className="text-xs text-text-3">Each ingredient is its own record. Add nutrients, finings, and later additions from the batch page as they happen.</div>
               {ingredients.map((i, idx) => (
                 <div key={idx} className="grid grid-cols-[1fr_1fr_auto] gap-2 rounded-xl border border-border bg-canvas p-3 sm:grid-cols-[140px_1fr_160px_120px_auto]">
@@ -303,7 +303,7 @@ function NewBatchForm() {
           )}
 
           {step === 3 && (
-            <div className="grid gap-4">
+            <div className="grid grid-cols-1 gap-4">
               {yeasts.map((y, idx) => (
                 <div key={idx} className="grid grid-cols-1 gap-2 rounded-xl border border-border bg-canvas p-3 sm:grid-cols-[2fr_160px_auto] sm:items-start">
                   <YeastStrainPicker manufacturer={y.manufacturer} strain={y.strain} onChange={(v) => patchYeast(idx, v)} />
@@ -344,7 +344,7 @@ function NewBatchForm() {
           )}
 
           {step === 4 && (
-            <div className="grid gap-4 text-sm">
+            <div className="grid grid-cols-1 gap-4 text-sm">
               <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5">
                 <R k="Name" v={name} />
                 <R k="Batch ID" v={code} />

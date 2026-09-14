@@ -279,7 +279,7 @@ export function LogActivityDialog({
         </>
       }
     >
-      <div className="grid gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field label="Batch">
             <Select value={bid} onChange={(e) => setBid(e.target.value)}>

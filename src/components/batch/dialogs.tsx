@@ -85,7 +85,7 @@ export function EditBatchDialog({ view, open, onClose }: { view: BatchView; open
         </>
       }
     >
-      <div className="grid gap-3">
+      <div className="grid grid-cols-1 gap-3">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field label="Name">
             <Input value={f.name} onChange={(e) => set('name', e.target.value)} />
@@ -262,7 +262,7 @@ export function IngredientDialog({
         </>
       }
     >
-      <div className="grid gap-3">
+      <div className="grid grid-cols-1 gap-3">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field label="Category">
             <Select value={f.category} onChange={(e) => set('category', e.target.value as BatchIngredient['category'])}>
@@ -436,7 +436,7 @@ export function YeastDialog({ batchId, existing, open, onClose }: { batchId: str
         </>
       }
     >
-      <div className="grid gap-3">
+      <div className="grid grid-cols-1 gap-3">
         <Field label="Yeast">
           <YeastStrainPicker
             autoFocus
@@ -548,7 +548,7 @@ export function ConfirmFgDialog({ view, open, onClose }: { view: BatchView; open
         </>
       }
     >
-      <div className="grid gap-3">
+      <div className="grid grid-cols-1 gap-3">
         {view.stability.stable ? (
           <div className="rounded-lg border border-[color-mix(in_oklab,var(--ok)_35%,transparent)] bg-[color-mix(in_oklab,var(--ok)_10%,transparent)] px-3 py-2 text-xs text-ok">
             Gravity appears stable: {formatGravity(view.stability.compared?.value)} → {formatGravity(view.stability.latest?.value)} over {view.stability.spanDays} days.
@@ -677,7 +677,7 @@ export function PackagingDialog({ view, open, onClose }: { view: BatchView; open
         </>
       }
     >
-      <div className="grid gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Field label="Package profile">
             <Select value={profileId} onChange={(e) => applyProfile(e.target.value)}>
@@ -866,7 +866,7 @@ export function TastingDialog({ view, open, onClose, existing }: { view: BatchVi
         </>
       }
     >
-      <div className="grid gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <div className="grid grid-cols-2 gap-3">
           <Field label="Tasting date">
             <Input type="datetime-local" value={toLocalInput(f.tasted_at)} onChange={(e) => set('tasted_at', fromLocalInput(e.target.value))} />
@@ -968,7 +968,7 @@ export function StabilizationDialog({ view, open, onClose }: { view: BatchView; 
         </>
       }
     >
-      <div className="grid gap-3">
+      <div className="grid grid-cols-1 gap-3">
         <div className="grid grid-cols-2 gap-3">
           <Field label="Date">
             <Input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} />
@@ -1080,7 +1080,7 @@ export function BacksweetenDialog({ view, open, onClose }: { view: BatchView; op
         </>
       }
     >
-      <div className="grid gap-3">
+      <div className="grid grid-cols-1 gap-3">
         <div className="grid grid-cols-2 gap-3">
           <Field label="Date">
             <Input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} />
@@ -1151,7 +1151,7 @@ export function ReminderDialog({ batchId, open, onClose }: { batchId: string | n
         </>
       }
     >
-      <div className="grid gap-3">
+      <div className="grid grid-cols-1 gap-3">
         <Field label="What">
           <Input autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Check gravity" />
         </Field>
@@ -1361,7 +1361,7 @@ export function MeasurementDialog({ measurement, open, onClose }: { measurement:
         </>
       }
     >
-      <div className="grid gap-3">
+      <div className="grid grid-cols-1 gap-3">
         <div className="grid grid-cols-2 gap-3">
           <Field label={label}>
             <UnitInput autoFocus value={value} onChange={setValue} unit={unit} step={measurement.type === 'sg' ? 0.001 : measurement.type === 'ph' ? 0.01 : 'any'} />
@@ -1457,7 +1457,7 @@ export function EventDialog({
         </>
       }
     >
-      <div className="grid gap-3">
+      <div className="grid grid-cols-1 gap-3">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field label="Activity">
             <Select value={type} onChange={(e) => setType(e.target.value as BatchEvent['type'])}>

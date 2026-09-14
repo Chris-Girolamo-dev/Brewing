@@ -226,7 +226,7 @@ export function SplitDialog({ batchId, open, onClose }: { batchId: string | null
         </>
       }
     >
-      <div className="grid gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Field label="Split date">
             <Input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} />

@@ -133,7 +133,7 @@ function VesselDialog({
         </>
       }
     >
-      <div className="grid gap-3">
+      <div className="grid grid-cols-1 gap-3">
         <Field label="Name">
           <Input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="1-Gallon Glass Jar" />
         </Field>

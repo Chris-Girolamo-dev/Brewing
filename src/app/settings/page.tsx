@@ -26,15 +26,16 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle>Units</CardTitle>
           </CardHeader>
-          <CardBody className="grid gap-4 pt-3">
+          <CardBody className="grid grid-cols-1 gap-4 pt-3">
             <Field label="Display system" hint="Values are stored as entered and converted for display. You can always type “2.5 lb honey” regardless of this setting.">
               <SegmentedControl<UnitSystem>
                 size="md"
+                fullWidth
                 value={prefs.unit_system}
                 onChange={(v) => setPrefs({ unit_system: v })}
                 options={[
-                  { value: 'us', label: 'US customary (gal · oz · lb · °F)' },
-                  { value: 'metric', label: 'Metric (L · mL · g · °C)' },
+                  { value: 'us', label: 'US · gal · lb · °F' },
+                  { value: 'metric', label: 'Metric · L · g · °C' },
                 ]}
               />
             </Field>
@@ -61,7 +62,7 @@ export default function SettingsPage() {
             <CardTitle>Data</CardTitle>
             <StatusPill tone={mode === 'supabase' ? 'ok' : 'warn'}>{mode === 'supabase' ? 'Supabase' : 'Demo · browser storage'}</StatusPill>
           </CardHeader>
-          <CardBody className="grid gap-3 pt-3">
+          <CardBody className="grid grid-cols-1 gap-3 pt-3">
             <p className="text-sm text-text-2">
               {mode === 'supabase'
                 ? 'Connected to Supabase Postgres via NEXT_PUBLIC_SUPABASE_URL.'
@@ -90,7 +91,7 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle>Controlled vocabularies</CardTitle>
           </CardHeader>
-          <CardBody className="grid gap-3 pt-3 text-xs">
+          <CardBody className="grid grid-cols-1 gap-3 pt-3 text-xs">
             <Vocab label="Beverage types" items={BEVERAGE_TYPES} />
             <Vocab label="Stages" items={BATCH_STAGES} />
             <Vocab label="Ingredient categories" items={INGREDIENT_CATEGORIES} />

@@ -213,7 +213,8 @@ body {
   }
 }
 
-/* iOS Safari gives date/time inputs an intrinsic width that overflows grid cells. */
+/* iOS Safari: date/time inputs get an intrinsic width that overflows grid cells, and the
+   native value text sits at the top of a fixed-height box unless the input is a flex row. */
 input[type="date"],
 input[type="datetime-local"],
 input[type="time"] {
@@ -221,10 +222,22 @@ input[type="time"] {
   max-width: 100%;
   -webkit-appearance: none;
   appearance: none;
-  display: block;
+  display: flex;
+  align-items: center;
 }
-input::-webkit-date-and-time-value { text-align: left; }
+input::-webkit-date-and-time-value {
+  text-align: left;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
 input[type="number"] { min-width: 0; }
+
+/* iOS Safari zooms the whole page when a focused field's font is under 16px, which pushes
+   dialogs off the right edge. Keep form controls at 16px on phones; desktop stays 14px. */
+@media (max-width: 768px) {
+  input, select, textarea { font-size: 16px !important; }
+}
 
 /* Utilities */
 .scrollbar-none { scrollbar-width: none; }
