@@ -63,7 +63,11 @@ export async function POST(req: Request) {
     if (!response.parsed_output) {
       return NextResponse.json({ error: 'Could not read a recipe from this file. Try a sharper photo or a PDF.' }, { status: 422 })
     }
-    return NextResponse.json({ recipe: response.parsed_output })
+    const out = response.parsed_output
+    if (!out.name.trim() && out.ingredients.length === 0 && out.steps.length === 0) {
+      return NextResponse.json({ error: 'No legible recipe found in this file. Try a sharper, closer photo of the page.' }, { status: 422 })
+    }
+    return NextResponse.json({ recipe: out })
   } catch (e) {
     if (e instanceof Anthropic.AuthenticationError) return NextResponse.json({ error: 'Anthropic API key is invalid.' }, { status: 503 })
     if (e instanceof Anthropic.RateLimitError) return NextResponse.json({ error: 'Rate limited by the model API. Try again in a minute.' }, { status: 429 })
