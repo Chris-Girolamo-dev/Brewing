@@ -1,5 +1,7 @@
 // Recipe extraction from a photo / PDF of a recipe or SOP page. The schema is what Claude is
 // asked to fill via structured outputs; toRecipe() maps it onto the app's Recipe row.
+// Structured outputs allow at most 16 nullable/union fields per schema, so optional text is an
+// empty string and only numbers and a few enums are nullable (10 today).
 import { z } from 'zod'
 import {
   ADDITION_STAGES,
@@ -16,10 +18,10 @@ import {
 export const ExtractedRecipeSchema = z.object({
   name: z.string().describe('Recipe title as written, e.g. "Elderberry Mead"'),
   beverage_type: z.enum(BEVERAGE_TYPES),
-  style: z.string().nullable().describe('Short style/subtype, e.g. "Elderberry melomel". Null if not stated.'),
-  description: z.string().nullable().describe('One-line flavour description if the page has one.'),
+  style: z.string().describe('Short style/subtype, e.g. "Elderberry melomel". Empty string if not stated.'),
+  description: z.string().describe('One-line flavour description if the page has one, else empty string.'),
   target_volume: z.number().nullable().describe('Batch volume if stated. Null if not stated; do not guess.'),
-  volume_unit: z.enum(VOLUME_UNITS).nullable(),
+  volume_unit: z.enum(VOLUME_UNITS).describe('Unit for target_volume. Use gal when no volume is stated.'),
   goal: z.enum(FERMENTATION_GOALS).nullable().describe('Dry / Semi-dry / Sweet / Still / Sparkling if implied, else null.'),
   ingredients: z.array(
     z.object({
@@ -27,16 +29,16 @@ export const ExtractedRecipeSchema = z.object({
       name: z.string().describe('Ingredient as written, without the quantity.'),
       amount: z.number().nullable(),
       unit: z.enum(INGREDIENT_UNITS).nullable(),
-      addition_stage: z.enum(ADDITION_STAGES).nullable().describe('Primary for day-of-batching items; Stabilization / Backsweetening / Aging for post-fermentation items.'),
-      notes: z.string().nullable().describe('Qualifiers such as "or similar", "to taste", "topped to volume".'),
+      addition_stage: z.enum(ADDITION_STAGES).describe('Primary for day-of-batching items; Stabilization / Backsweetening / Aging for post-fermentation items.'),
+      notes: z.string().describe('Qualifiers such as "or similar", "to taste", "topped to volume". Empty string if none.'),
     })
   ),
   yeasts: z.array(
     z.object({
-      manufacturer: z.string().nullable(),
+      manufacturer: z.string().describe('Maker, e.g. Lalvin, Red Star, Fermentis. Empty string if unknown.'),
       strain: z.string(),
       amount: z.number().nullable(),
-      unit: z.enum(['g', 'packet']).nullable(),
+      unit: z.enum(['g', 'packet']).describe('g unless the page says packet/sachet.'),
     })
   ),
   steps: z.array(z.string()).describe('Procedure steps in order, one sentence each, references to other pages removed.'),
@@ -46,9 +48,9 @@ export const ExtractedRecipeSchema = z.object({
     abv: z.number().nullable().describe('ABV percent if stated'),
     primary_days: z.number().nullable().describe('Time in primary converted to days'),
     aging_days: z.number().nullable().describe('Aging time converted to days'),
-    tasting_notes: z.string().nullable(),
+    tasting_notes: z.string().describe('Empty string if none.'),
   }),
-  notes: z.string().nullable().describe('Author batch notes, warnings, and anything else useful that does not fit above.'),
+  notes: z.string().describe('Author batch notes, warnings, and anything else useful that does not fit above. Empty string if none.'),
 })
 
 export type ExtractedRecipe = z.infer<typeof ExtractedRecipeSchema>
@@ -72,14 +74,14 @@ export function toRecipe(x: ExtractedRecipe): Omit<Recipe, 'id' | 'created_at'> 
     unit: i.unit,
     brand: null,
     variety: null,
-    addition_stage: i.addition_stage ?? 'Primary',
-    notes: i.notes,
+    addition_stage: i.addition_stage,
+    notes: i.notes.trim() || null,
   }))
   const yeasts: RecipeYeast[] = x.yeasts.map((y) => ({
-    manufacturer: y.manufacturer,
+    manufacturer: y.manufacturer.trim() || null,
     strain: y.strain.trim(),
     amount: y.amount,
-    unit: y.unit,
+    unit: y.amount == null ? null : y.unit,
     notes: null,
   }))
   const d = x.batch_details
@@ -89,21 +91,21 @@ export function toRecipe(x: ExtractedRecipe): Omit<Recipe, 'id' | 'created_at'> 
     d.abv != null ? `ABV ${d.abv}%` : null,
     d.primary_days != null ? `Primary ${d.primary_days} days` : null,
     d.aging_days != null ? `Aged ${d.aging_days} days` : null,
-    d.tasting_notes ? `Tasting: ${d.tasting_notes}` : null,
+    d.tasting_notes.trim() ? `Tasting: ${d.tasting_notes.trim()}` : null,
   ].filter(Boolean)
   const notesParts = [
-    x.description,
+    x.description.trim() || null,
     details.length ? `Reference batch: ${details.join(' · ')}` : null,
     x.steps.length ? `Procedure:\n${x.steps.map((s, i) => `${i + 1}. ${s}`).join('\n')}` : null,
-    x.notes,
+    x.notes.trim() || null,
   ].filter(Boolean)
   return {
     name: x.name.trim(),
     version: 1,
     beverage_type: x.beverage_type,
-    style: x.style,
+    style: x.style.trim() || null,
     target_volume: x.target_volume,
-    volume_unit: x.volume_unit ?? 'gal',
+    volume_unit: x.volume_unit,
     goal: x.goal,
     ingredients,
     yeasts,
