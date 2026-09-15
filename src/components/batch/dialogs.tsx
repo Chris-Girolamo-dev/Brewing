@@ -29,6 +29,7 @@ import {
   type Packaging,
   type Recipe,
   type RecipeIngredient,
+  type Reminder,
   type RecipeYeast,
   type Tasting,
   type Yeast,
@@ -1115,23 +1116,53 @@ export function BacksweetenDialog({ view, open, onClose }: { view: BatchView; op
 
 // ---------------------------------------------------------------- Reminder
 
-export function ReminderDialog({ batchId, open, onClose }: { batchId: string | null; open: boolean; onClose: () => void }) {
-  const { insert, data } = useStore()
+export function ReminderDialog({
+  batchId,
+  existing,
+  open,
+  onClose,
+}: {
+  batchId: string | null
+  existing?: Reminder | null
+  open: boolean
+  onClose: () => void
+}) {
+  const { insert, update, remove, data } = useStore()
   const toast = useToast()
   const [title, setTitle] = React.useState('')
   const [due, setDue] = React.useState(todayInput())
   const [bid, setBid] = React.useState(batchId ?? '')
+  const [done, setDone] = React.useState(false)
   React.useEffect(() => {
-    if (open) {
+    if (!open) return
+    if (existing) {
+      setTitle(existing.title)
+      setDue(existing.due_at.slice(0, 10))
+      setBid(existing.batch_id ?? '')
+      setDone(existing.done)
+    } else {
       setTitle('')
       setDue(todayInput())
       setBid(batchId ?? '')
+      setDone(false)
     }
-  }, [open, batchId])
+  }, [open, batchId, existing])
   async function save() {
     if (!title.trim()) return
-    await insert('reminders', { batch_id: bid || null, title: title.trim(), due_at: new Date(`${due}T09:00:00`).toISOString(), done: false })
-    toast({ tone: 'ok', title: 'Reminder added' })
+    const row = { batch_id: bid || null, title: title.trim(), due_at: new Date(`${due}T09:00:00`).toISOString(), done }
+    if (existing) {
+      await update('reminders', existing.id, row)
+      toast({ tone: 'ok', title: 'Reminder updated' })
+    } else {
+      await insert('reminders', row)
+      toast({ tone: 'ok', title: 'Reminder added' })
+    }
+    onClose()
+  }
+  async function del() {
+    if (!existing) return
+    await remove('reminders', existing.id)
+    toast({ tone: 'ok', title: 'Reminder deleted' })
     onClose()
   }
   const presets = ['Check gravity', 'Add Fermaid-O', 'Taste oak', 'Check bottle carbonation', 'Rack off lees', 'Taste']
@@ -1139,14 +1170,19 @@ export function ReminderDialog({ batchId, open, onClose }: { batchId: string | n
     <Dialog
       open={open}
       onClose={onClose}
-      title="Add reminder"
+      title={existing ? 'Edit reminder' : 'Add reminder'}
       footer={
         <>
+          {existing && (
+            <Button variant="danger" className="mr-auto" onClick={del}>
+              Delete
+            </Button>
+          )}
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
           <Button onClick={save} disabled={!title.trim()}>
-            Add
+            {existing ? 'Save' : 'Add'}
           </Button>
         </>
       }
@@ -1177,6 +1213,11 @@ export function ReminderDialog({ batchId, open, onClose }: { batchId: string | n
             </Select>
           </Field>
         </div>
+        {existing && (
+          <label className="flex items-center gap-3 text-sm text-text-2">
+            <Switch checked={done} onCheckedChange={setDone} /> Done
+          </label>
+        )}
       </div>
     </Dialog>
   )

@@ -11,12 +11,15 @@ import { Card, CardBody, CardHeader, CardTitle, EmptyState, MetricCard } from '@
 import { Button } from '@/components/ui/Button'
 import { StatusPill } from '@/components/ui/Badge'
 import { useShell } from '@/components/AppShell'
+import { ReminderDialog } from '@/components/batch/dialogs'
+import type { Reminder } from '@/lib/types'
 import { fmtDate, fmtRelative } from '@/lib/utils'
 import { isPast, isToday } from 'date-fns'
 
 export default function DashboardPage() {
   const { data, prefs, ready, update } = useStore()
   const { openLog } = useShell()
+  const [editReminder, setEditReminder] = React.useState<Reminder | null>(null)
 
   const views = React.useMemo(
     () =>
@@ -131,7 +134,7 @@ export default function DashboardPage() {
                         >
                           <CheckCircle2 size={16} />
                         </button>
-                        <div className="min-w-0 flex-1">
+                        <div className="min-w-0 flex-1 cursor-pointer" onClick={() => setEditReminder(r)}>
                           <div className="truncate text-sm text-fg">{r.title}</div>
                           <div className="text-xs text-text-3">
                             {b ? (
@@ -143,7 +146,9 @@ export default function DashboardPage() {
                             )}
                           </div>
                         </div>
-                        <StatusPill tone={overdue ? 'crit' : isToday(new Date(r.due_at)) ? 'warn' : 'neutral'}>{fmtDate(r.due_at, 'MMM d')}</StatusPill>
+                        <button onClick={() => setEditReminder(r)} aria-label="Edit reminder">
+                          <StatusPill tone={overdue ? 'crit' : isToday(new Date(r.due_at)) ? 'warn' : 'neutral'}>{fmtDate(r.due_at, 'MMM d')}</StatusPill>
+                        </button>
                       </li>
                     )
                   })}
@@ -187,6 +192,7 @@ export default function DashboardPage() {
           </Card>
         </div>
       </div>
+      <ReminderDialog batchId={null} existing={editReminder} open={editReminder !== null} onClose={() => setEditReminder(null)} />
     </>
   )
 }

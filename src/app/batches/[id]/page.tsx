@@ -49,7 +49,7 @@ import {
   YeastDialog,
 } from '@/components/batch/dialogs'
 import { NutrientPlan } from '@/components/batch/NutrientPlan'
-import { BATCH_STAGES, type BatchEvent, type BatchIngredient, type Measurement, type Tasting, type TempUnit, type Yeast } from '@/lib/types'
+import { BATCH_STAGES, type BatchEvent, type BatchIngredient, type Measurement, type Reminder, type Tasting, type TempUnit, type Yeast } from '@/lib/types'
 import { formatAmount, formatGravity, formatTemp, formatVolume, convertVolume } from '@/lib/calc/units'
 import { transferLoss, daysBetween } from '@/lib/calc/fermentation'
 import { bottleBreakdown } from '@/lib/calc/packaging'
@@ -71,6 +71,7 @@ export default function BatchDetailPage() {
   const [editTasting, setEditTasting] = React.useState<Tasting | null>(null)
   const [editMeasurement, setEditMeasurement] = React.useState<Measurement | null>(null)
   const [editEvent, setEditEvent] = React.useState<BatchEvent | null>(null)
+  const [editReminder, setEditReminder] = React.useState<Reminder | null>(null)
   const [menu, setMenu] = React.useState(false)
 
   const batch = data.batches.find((b) => b.id === id)
@@ -382,8 +383,12 @@ export default function BatchDetailPage() {
                           <button onClick={() => update('reminders', r.id, { done: true })} className="text-text-3 hover:text-ok" aria-label="Done">
                             <CheckCircle2 size={15} />
                           </button>
-                          <span className="flex-1 text-fg">{r.title}</span>
-                          <span className="font-mono text-xs text-text-3">{fmtDate(r.due_at, 'MMM d')}</span>
+                          <button type="button" className="flex-1 text-left text-fg hover:underline" onClick={() => { setEditReminder(r); setDlg('reminder-edit') }}>
+                            {r.title}
+                          </button>
+                          <button type="button" className="font-mono text-xs text-text-3 hover:text-fg" onClick={() => { setEditReminder(r); setDlg('reminder-edit') }}>
+                            {fmtDate(r.due_at, 'MMM d')}
+                          </button>
                         </li>
                       ))}
                     </ul>
@@ -806,6 +811,7 @@ export default function BatchDetailPage() {
       <StabilizationDialog view={view} open={dlg === 'stabilize'} onClose={close} />
       <BacksweetenDialog view={view} open={dlg === 'backsweeten'} onClose={close} />
       <ReminderDialog batchId={batch.id} open={dlg === 'reminder'} onClose={close} />
+      <ReminderDialog batchId={batch.id} existing={editReminder} open={dlg === 'reminder-edit'} onClose={close} />
       <DuplicateDialog view={view} mode="duplicate" open={dlg === 'duplicate'} onClose={close} />
       <DuplicateDialog view={view} mode="recipe" open={dlg === 'recipe'} onClose={close} />
       <Dialog

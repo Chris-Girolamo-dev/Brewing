@@ -10,12 +10,14 @@ import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { ReminderDialog } from '@/components/batch/dialogs'
 import { cn, fmtDate } from '@/lib/utils'
+import type { Reminder } from '@/lib/types'
 import { Badge } from '@/components/ui/Badge'
 
 export default function CalendarPage() {
   const { data, ready, update, remove } = useStore()
   const [month, setMonth] = React.useState(startOfMonth(new Date()))
   const [add, setAdd] = React.useState(false)
+  const [editReminder, setEditReminder] = React.useState<Reminder | null>(null)
   const [showDone, setShowDone] = React.useState(false)
   if (!ready) return <Loading />
 
@@ -69,9 +71,9 @@ export default function CalendarPage() {
                     {rems.slice(0, 2).map((r) => {
                       const b = data.batches.find((x) => x.id === r.batch_id)
                       return (
-                        <Link key={r.id} href={b ? `/batches/${b.id}` : '#'} className={cn('block truncate rounded px-1 text-[10.5px]', r.done ? 'bg-surface-2 text-text-3 line-through' : 'bg-accent-soft text-accent')} title={`${r.title}${b ? ` · ${b.name}` : ''}`}>
+                        <button key={r.id} type="button" onClick={() => setEditReminder(r)} className={cn('block w-full truncate rounded px-1 text-left text-[10.5px]', r.done ? 'bg-surface-2 text-text-3 line-through' : 'bg-accent-soft text-accent')} title={`${r.title}${b ? ` · ${b.name}` : ''}`}>
                           {r.title}
-                        </Link>
+                        </button>
                       )
                     })}
                     {evs.slice(0, 2).map((e) => {
@@ -110,7 +112,7 @@ export default function CalendarPage() {
                       <button className={cn('mt-0.5', r.done ? 'text-ok' : 'text-text-3 hover:text-ok')} onClick={() => update('reminders', r.id, { done: !r.done })} aria-label="Toggle done">
                         {r.done ? <RotateCcw size={15} /> : <CheckCircle2 size={16} />}
                       </button>
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0 flex-1 cursor-pointer" onClick={() => setEditReminder(r)}>
                         <div className={cn('text-sm', r.done ? 'text-text-3 line-through' : 'text-fg')}>{r.title}</div>
                         <div className="text-xs text-text-3">
                           {b ? (
@@ -122,7 +124,9 @@ export default function CalendarPage() {
                           )}
                         </div>
                       </div>
-                      <Badge tone={overdue ? 'crit' : isToday(new Date(r.due_at)) ? 'warn' : 'neutral'}>{fmtDate(r.due_at, 'MMM d')}</Badge>
+                      <button onClick={() => setEditReminder(r)} aria-label="Edit reminder">
+                        <Badge tone={overdue ? 'crit' : isToday(new Date(r.due_at)) ? 'warn' : 'neutral'}>{fmtDate(r.due_at, 'MMM d')}</Badge>
+                      </button>
                       <button className="text-text-3 hover:text-crit" onClick={() => remove('reminders', r.id)} aria-label="Delete">
                         ×
                       </button>
@@ -136,6 +140,7 @@ export default function CalendarPage() {
       </div>
 
       <ReminderDialog batchId={null} open={add} onClose={() => setAdd(false)} />
+      <ReminderDialog batchId={null} existing={editReminder} open={editReminder !== null} onClose={() => setEditReminder(null)} />
     </>
   )
 }
