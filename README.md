@@ -37,6 +37,13 @@ paper notes; everything is editable in-app.
 
 4. Restart `npm run dev`. The sidebar badge switches from “Demo · local” to “Supabase”.
 
+### Recipe import from a photo (optional)
+
+Recipes → “Import from photo” sends a photo or PDF of a recipe/SOP page to Claude and returns an
+editable recipe template. It needs a server-side `ANTHROPIC_API_KEY` (not `NEXT_PUBLIC_`). On
+Vercel add it under Project → Settings → Environment Variables and redeploy. Without it the button
+still shows but reports that import is not configured.
+
 v1 has no authentication: RLS is enabled with permissive policies for the anon role. Adding
 auth later means a nullable `user_id` column per table and tightening those policies; no
 schema rebuild.

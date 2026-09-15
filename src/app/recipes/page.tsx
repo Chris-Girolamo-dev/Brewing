@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { ArrowRight, BookOpen, Trash2 } from 'lucide-react'
+import { ArrowRight, BookOpen, ScanLine, Trash2 } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { PageHeader, Loading } from '@/components/PageHeader'
 import { Card, CardBody, CardHeader, CardTitle, EmptyState } from '@/components/ui/Card'
@@ -10,26 +10,42 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { formatAmount, formatVolume } from '@/lib/calc/units'
 import { fmtDate } from '@/lib/utils'
+import { RecipeImportDialog } from '@/components/RecipeImport'
 
 export default function RecipesPage() {
   const { data, prefs, ready, remove } = useStore()
+  const [importOpen, setImportOpen] = React.useState(false)
   if (!ready) return <Loading />
 
   const recipes = [...data.recipes].sort((a, b) => a.name.localeCompare(b.name) || b.version - a.version)
 
   return (
     <>
-      <PageHeader eyebrow="Recipes" title="Recipe templates" subtitle="Saved from batches. Start a new batch from any version." />
+      <PageHeader
+        eyebrow="Recipes"
+        title="Recipe templates"
+        subtitle="Saved from batches or imported from a photo. Start a new batch from any version."
+        actions={
+          <Button onClick={() => setImportOpen(true)}>
+            <ScanLine /> Import from photo
+          </Button>
+        }
+      />
       {recipes.length === 0 ? (
         <EmptyState
           title="No recipes yet"
-          hint="Open a batch and choose “Save as recipe” from the ··· menu. Ingredient quantities and yeast become defaults for the next batch."
+          hint="Import a photo or PDF of a recipe page, or open a batch and choose “Save as recipe” from the ··· menu."
           action={
-            <Link href="/batches">
-              <Button variant="secondary">
-                <BookOpen /> Go to batches
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button onClick={() => setImportOpen(true)}>
+                <ScanLine /> Import from photo
               </Button>
-            </Link>
+              <Link href="/batches">
+                <Button variant="secondary">
+                  <BookOpen /> Go to batches
+                </Button>
+              </Link>
+            </div>
           }
         />
       ) : (
@@ -97,6 +113,7 @@ export default function RecipesPage() {
           })}
         </div>
       )}
+      <RecipeImportDialog open={importOpen} onClose={() => setImportOpen(false)} />
     </>
   )
 }

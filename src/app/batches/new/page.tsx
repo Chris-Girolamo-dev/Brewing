@@ -29,6 +29,7 @@ import { preferredVolumeUnit } from '@/lib/calc/units'
 import { fromLocalInput, num, str, todayInput, toLocalInput } from '@/lib/utils'
 import { YeastStrainPicker } from '@/components/YeastStrainPicker'
 import { yeastLabel } from '@/lib/yeasts'
+import { RecipeImportDialog } from '@/components/RecipeImport'
 
 type Step = 1 | 2 | 3 | 4
 
@@ -46,6 +47,7 @@ function NewBatchForm() {
   const [codeTouched, setCodeTouched] = React.useState(false)
   const [style, setStyle] = React.useState('')
   const [recipeId, setRecipeId] = React.useState(recipeParam ?? '')
+  const [importOpen, setImportOpen] = React.useState(false)
   const [date, setDate] = React.useState(todayInput())
   const [volume, setVolume] = React.useState('1')
   const [volUnit, setVolUnit] = React.useState<VolumeUnit>(preferredVolumeUnit(prefs.unit_system))
@@ -221,7 +223,17 @@ function NewBatchForm() {
                 <Field label="Style / subtype">
                   <Input value={style} onChange={(e) => setStyle(e.target.value)} placeholder="Blueberry melomel" />
                 </Field>
-                <Field label="Recipe" hint="Pre-fills ingredients and yeast">
+                <Field
+                  label="Recipe"
+                  hint={
+                    <>
+                      Pre-fills ingredients and yeast ·{' '}
+                      <button type="button" className="text-accent hover:underline" onClick={() => setImportOpen(true)}>
+                        import from photo
+                      </button>
+                    </>
+                  }
+                >
                   <Select value={recipeId} onChange={(e) => applyRecipe(e.target.value)}>
                     <option value="">Blank</option>
                     {data.recipes.map((r) => (
@@ -399,6 +411,7 @@ function NewBatchForm() {
           </div>
         </CardBody>
       </Card>
+      <RecipeImportDialog open={importOpen} onClose={() => setImportOpen(false)} />
     </>
   )
 

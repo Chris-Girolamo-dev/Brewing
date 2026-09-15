@@ -12,6 +12,7 @@
     "seed:sql": "node --experimental-strip-types scripts/gen-seed-sql.mts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.125.0",
     "@supabase/supabase-js": "^2.57.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
